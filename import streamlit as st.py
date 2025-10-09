@@ -102,7 +102,7 @@ div.stButton > button:first-child {
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 16px 80px;                     /* ⬅️ más ancho */
+    padding: 20px 60px;                     /* ⬅️ más ancho */
     font-size: 1.15em;
     font-weight: 600;
     cursor: pointer;
