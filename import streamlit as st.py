@@ -56,7 +56,7 @@ div.stButton > button:first-child {
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 14px 42px;
+    padding: 14px 46px;
     font-size: 1.1em;
     font-weight: 600;
     cursor: pointer;
