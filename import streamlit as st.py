@@ -85,18 +85,30 @@ form button[kind="primary"]:hover {
    🪪 CAMPOS DE TEXTO (CÉDULA)
 =========================== */
 label, 
-.stTextInput label, 
-.stTextInput div[data-baseweb="input"] input {
-    color: #FFFFFF !important;           /* 🔹 Texto blanco */
-    font-weight: 600 !important;
+.stTextInput label {
+    color: #1B168C !important;  /* 🔹 Azul institucional para el texto del label */
+    font-weight: 700 !important;
 }
+
+.stTextInput > div > div {
+    background-color: #1B168C !important; /* 🔹 Fondo azul */
+    border: 2px solid #F43B63 !important; /* 🔹 Borde rosado */
+    border-radius: 10px !important;
+}
+
 .stTextInput > div > div > input {
-    background-color: #1B168C !important; /* 🔹 Fondo azul institucional */
-    color: #FFFFFF !important;            /* 🔹 Texto dentro blanco */
-    border-radius: 8px !important;
-    border: 1.5px solid #F43B63 !important; /* 🔹 Borde rosado corporativo */
-    padding: 10px !important;
+    background-color: transparent !important; /* 🔹 Deja ver el azul del contenedor */
+    color: #FFFFFF !important;                /* 🔹 Texto blanco */
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: none !important;
 }
+
+.stTextInput input::placeholder {
+    color: #E5E7EB !important; /* 🔹 Placeholder gris claro */
+    opacity: 1 !important;
+}
+
 
 /* ===========================
    📊 TABLA
