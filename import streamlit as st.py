@@ -155,7 +155,7 @@ st.markdown("""
 # ============================
 # 💬 MENSAJE DE BIENVENIDA
 # ============================
-st.markdown("<h1>💬 Hola, soy Andrés</h1>", unsafe_allow_html=True)
+st.markdown("<h1>💬 Hola, soy Chris</h1>", unsafe_allow_html=True)
 st.markdown("""
 <div class="intro-text">
 Soy tu <span class="highlight">Asistente Virtual IA</span> de <b>Contacto Solutions</b>, aliado estratégico de <b>Banco Serfinanza</b>.<br>
