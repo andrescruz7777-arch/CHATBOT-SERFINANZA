@@ -21,6 +21,9 @@ if "cuota_elegida" not in st.session_state:
 # ============================
 st.markdown("""
 <style>
+/* ===========================
+   🎨 ESTILOS GLOBALES
+=========================== */
 html, body, .stApp, [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
     color: #1B168C !important;
@@ -28,11 +31,17 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 
 /* CABECERA */
 .header-container {
-    display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 2rem;
 }
 
 /* TITULOS */
-h1, h2, h3 { color: #1B168C !important; text-align: center; }
+h1, h2, h3 { 
+    color: #1B168C !important; 
+    text-align: center; 
+}
 
 /* TEXTO INICIAL */
 .intro-text {
@@ -43,10 +52,16 @@ h1, h2, h3 { color: #1B168C !important; text-align: center; }
     margin-top: 15px;
     color: #1B168C !important;
 }
-.highlight { color: #F43B63; font-weight: 600; }
+.highlight { 
+    color: #F43B63; 
+    font-weight: 600; 
+}
 
-/* BOTONES */
-div.stButton > button, form button[kind="primary"] {
+/* ===========================
+   🟦 BOTONES
+=========================== */
+div.stButton > button, 
+form button[kind="primary"] {
     background-color:#1B168C !important;
     color:#FFFFFF !important;
     border:none;
@@ -58,21 +73,63 @@ div.stButton > button, form button[kind="primary"] {
     transition:all .3s ease !important;
     box-shadow:0 4px 15px rgba(27,22,140,.3) !important;
 }
-div.stButton > button:hover, form button[kind="primary"]:hover {
+div.stButton > button:hover, 
+form button[kind="primary"]:hover {
     background-color:#F43B63 !important;
     color:#FFFFFF !important;
     box-shadow:0 0 20px rgba(244,59,99,.7) !important;
     transform:scale(1.05);
 }
 
-/* TABLA */
-table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; }
-th { background:#1B168C; color:#FFFFFF; text-align:center; padding:10px; }
-td { text-align:center; padding:8px; border-bottom:1px solid #E5E7EB; color:#000000; }
-tr:nth-child(even){ background:#F9FAFB; }
-tr:hover{ background:#F43B63; color:#FFFFFF; transition:.2s; }
+/* ===========================
+   🪪 CAMPOS DE TEXTO (CÉDULA)
+=========================== */
+label, 
+.stTextInput label, 
+.stTextInput div[data-baseweb="input"] input {
+    color: #FFFFFF !important;           /* 🔹 Texto blanco */
+    font-weight: 600 !important;
+}
+.stTextInput > div > div > input {
+    background-color: #1B168C !important; /* 🔹 Fondo azul institucional */
+    color: #FFFFFF !important;            /* 🔹 Texto dentro blanco */
+    border-radius: 8px !important;
+    border: 1.5px solid #F43B63 !important; /* 🔹 Borde rosado corporativo */
+    padding: 10px !important;
+}
+
+/* ===========================
+   📊 TABLA
+=========================== */
+table { 
+    width:100%; 
+    border-collapse:collapse; 
+    border-radius:10px; 
+    overflow:hidden; 
+}
+th { 
+    background:#1B168C; 
+    color:#FFFFFF; 
+    text-align:center; 
+    padding:10px; 
+}
+td { 
+    text-align:center; 
+    padding:8px; 
+    border-bottom:1px solid #E5E7EB; 
+    color:#000000; 
+}
+tr:nth-child(even){ 
+    background:#F9FAFB; 
+}
+tr:hover{ 
+    background:#F43B63; 
+    color:#FFFFFF; 
+    transition:.2s; 
+}
 </style>
 """, unsafe_allow_html=True)
+
 # ============================
 # 🖼️ CABECERA
 # ============================
