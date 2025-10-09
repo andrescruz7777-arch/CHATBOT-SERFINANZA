@@ -280,34 +280,14 @@ if st.session_state.get("cedula_validada", False):
     pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
     color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-    # ============= MENSAJE OFRECIMIENTO ============
-    mensajes = {
-        "REDIFERIDO CON PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-        "REDIFERIDO SIN PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-        "REESTRUCTURACION CON PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-        "REESTRUCTURACION SIN PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-        "PRORROGA SIN PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.""",
-        "PRORROGA CON PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
-    }
+    # ... (mensaje de alternativa disponible)
+    # 🔽 Aquí viene tu bloque de cuotas:
+    if seleccion:
+        # ============= DESPLEGABLE Y CONFIRMACIÓN ============
+        cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
+        seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
-    mensaje = mensajes.get(estrategia, f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento.")
-
-    st.markdown(f"""
-    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
-    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-        <div style='font-size:1.1em; color:{color}; font-weight:700;'>💡 Alternativa disponible</div>
-        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{mensaje}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ============= DESPLEGABLE Y CONFIRMACIÓN ============
-cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
-
+        # 🔽 Pega aquí TODO tu bloque de negociación, confirmaciones, más obligaciones y chat IA
 # ============================
 # ✅ OPCIONES DE NEGOCIACIÓN
 # ============================
