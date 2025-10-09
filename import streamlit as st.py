@@ -77,31 +77,48 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN CENTRADO CON COLOR Y FUNCIÓN
+# 🚀 BOTÓN PARA INICIAR CHATBOT (CENTRADO, FUNCIONAL Y CON COLORES SERFINANZA)
 # ============================
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    start = st.button("🚀 INICIAR CHATBOT")
-    st.markdown("""
-        <style>
-        div.stButton > button:first-child {
-            background-color: #1B168C;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 14px 36px;
-            font-size: 1.1em;
-            font-weight: 600;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        div.stButton > button:first-child:hover {
-            background-color: #F43B63;
-            transform: scale(1.05);
-        }
-        </style>
-    """, unsafe_allow_html=True)
 
+# Contenedor visual centrado
+st.markdown("""
+<style>
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+/* Botón institucional Serfinanza */
+div.stButton > button:first-child {
+    background-color: #1B168C; /* Azul Serfinanza */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 36px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Hover elegante */
+div.stButton > button:first-child:hover {
+    background-color: #F43B63; /* Rojo Serfinanza */
+    transform: scale(1.05);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Espacio centrado real
+with st.container():
+    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+    start = st.button("🚀 INICIAR CHATBOT")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Activar el flujo
 if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
