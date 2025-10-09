@@ -77,52 +77,52 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PARA INICIAR CHATBOT (CENTRADO, FUNCIONAL Y CON COLORES SERFINANZA)
+# 🚀 BOTÓN CENTRADO Y BRILLANTE SERFINANZA
 # ============================
 
-# Contenedor visual centrado
+# CSS para centrar y aplicar efecto de brillo azul
 st.markdown("""
 <style>
 .button-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
+    height: 25vh; /* centra verticalmente en el bloque visible */
+    margin-top: -20px;
 }
 
-/* Botón institucional Serfinanza */
+/* Botón estilo Serfinanza */
 div.stButton > button:first-child {
-    background-color: #1B168C; /* Azul Serfinanza */
+    background-color: #1B168C; /* Azul principal */
     color: white;
     border: none;
-    border-radius: 10px;
-    padding: 14px 36px;
+    border-radius: 12px;
+    padding: 14px 40px;
     font-size: 1.1em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(27,22,140,0.3); /* sombra azul */
 }
 
-/* Hover elegante */
+/* Hover: cambia a rojo Serfinanza y brillo */
 div.stButton > button:first-child:hover {
-    background-color: #F43B63; /* Rojo Serfinanza */
-    transform: scale(1.05);
+    background-color: #F43B63; /* Rojo Ser */
+    box-shadow: 0 0 18px rgba(244,59,99,0.7); /* brillo rojo */
+    transform: scale(1.07);
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Espacio centrado real
-with st.container():
-    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
-    start = st.button("🚀 INICIAR CHATBOT")
-    st.markdown("</div>", unsafe_allow_html=True)
+# Contenedor centrado real
+st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+start = st.button("🚀 INICIAR CHATBOT")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# Activar el flujo
+# Activación del flujo
 if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
-
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
 # ============================
