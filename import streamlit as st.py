@@ -259,8 +259,3 @@ if st.session_state["cedula_valida"]:
         registro.to_excel(file_path, index=False)
 
         st.success("📄 Registro guardado exitosamente en confirmaciones_chatbot.xlsx")
-
-                💼 <b>Contacto Solutions S.A.S.</b><br>
-                💬 <a href="https://wa.me/573112878102?text=Hola,+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza" target="_blank">Escríbenos por WhatsApp</a>
-                """, unsafe_allow_html=True)
-                st.stop()
