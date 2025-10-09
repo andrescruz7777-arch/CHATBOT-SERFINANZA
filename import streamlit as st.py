@@ -305,31 +305,33 @@ if st.session_state.get("cedula_validada", False):
     """, unsafe_allow_html=True)
 
     # ============= DESPLEGABLE Y CONFIRMACIÓN ============
-    cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-    seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
+cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
+seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
-    if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
-        confirmaciones = {
-            "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-            "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-            "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
-            "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
-            "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
-            "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
-        }
+# ============================
+# ✅ OPCIONES DE NEGOCIACIÓN
+# ============================
+if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
+    confirmaciones = {
+        "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+        "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
+        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
+        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
+        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
+    }
 
-        confirm = confirmaciones.get(estrategia, "")
-        st.markdown(f"""
-        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
-        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-            <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
-            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    elif seleccion_cuota == "No estoy interesado":
-        st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
-            # ============================
-    # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA
+    confirm = confirmaciones.get(estrategia, "")
+    st.markdown(f"""
+    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
+    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
+        <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
+        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ============================
+    # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA (SOLO DESPUÉS DE NEGOCIAR)
     # ============================
     cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
     if len(cliente_en_mora) >= 2:
@@ -344,6 +346,7 @@ if st.session_state.get("cedula_validada", False):
         </div>
         """, unsafe_allow_html=True)
 
+elif seleccion_cuota == "No estoy interesado":
     # ============================
     # 💬 CHAT IA DE PERSUASIÓN (GPT-4O-MINI)
     # ============================
@@ -363,11 +366,11 @@ if st.session_state.get("cedula_validada", False):
     </div>
     """, unsafe_allow_html=True)
 
-    # Inicializa historial de chat si no existe
+    # Inicializa historial del chat
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
 
-    # Muestra el historial previo
+    # Mostrar historial previo
     for msg in st.session_state["chat_history"]:
         if msg["role"] == "user":
             st.markdown(f"""
@@ -387,7 +390,7 @@ if st.session_state.get("cedula_validada", False):
             </div>
             """, unsafe_allow_html=True)
 
-    # Campo de entrada de chat
+    # Campo de entrada del chat
     user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
 
     if user_msg:
@@ -397,7 +400,7 @@ if st.session_state.get("cedula_validada", False):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios de los acuerdos, cómo ayudan a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
+                {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
                 *st.session_state["chat_history"]
             ]
         )
@@ -405,4 +408,3 @@ if st.session_state.get("cedula_validada", False):
         ai_reply = response.choices[0].message.content
         st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
         st.rerun()
-
