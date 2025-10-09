@@ -93,17 +93,51 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PRINCIPAL (FUNCIONAL)
+# 🚀 BOTÓN PRINCIPAL (CENTRADO PERFECTO Y FUNCIONAL)
 # ============================
-st.markdown("<br>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
+st.markdown("""
+<style>
+.start-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+}
+
+/* Botón principal Serfinanza */
+div.start-button-container > button {
+    background-color: #1B168C;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 42px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(27,22,140,0.3);
+}
+
+/* Hover rojo con brillo */
+div.start-button-container > button:hover {
+    background-color: #F43B63;
+    box-shadow: 0 0 20px rgba(244,59,99,0.7);
+    transform: scale(1.07);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Usamos un contenedor flex y un st.button real
+with st.container():
+    st.markdown("<div class='start-button-container'>", unsafe_allow_html=True)
     start = st.button("🚀 INICIAR CHATBOT")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Si el usuario inicia, creamos el estado
 if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
+
 
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
