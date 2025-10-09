@@ -36,14 +36,14 @@ h1, h2, h3 { color: #1B168C; text-align: center; }
 }
 .highlight { color: #F43B63; font-weight: 600; }
 
-/* Botones Serfinanza */
-div.stButton > button:first-child{
-    background-color:#1B168C; color:#fff; border:none; border-radius:12px;
-    padding:20px 60px; font-size:1.1em; font-weight:600; cursor:pointer;
-    transition:all .3s ease; box-shadow:0 4px 15px rgba(27,22,140,.3);
+/* Botones Serfinanza (st.button y form_submit_button) */
+div.stButton > button, form button[kind="primary"] {
+    background-color:#1B168C !important; color:#fff !important; border:none; border-radius:12px !important;
+    padding:16px 60px !important; font-size:1.1em !important; font-weight:600 !important; cursor:pointer;
+    transition:all .3s ease !important; box-shadow:0 4px 15px rgba(27,22,140,.3) !important;
 }
-div.stButton > button:first-child:hover{
-    background-color:#F43B63; box-shadow:0 0 20px rgba(244,59,99,.7); transform:scale(1.07);
+div.stButton > button:hover, form button[kind="primary"]:hover {
+    background-color:#F43B63 !important; box-shadow:0 0 20px rgba(244,59,99,.7) !important; transform:scale(1.05);
 }
 
 /* Tabla obligaciones */
@@ -88,6 +88,23 @@ if start:
     st.session_state["intentos"] = 0
 
 # ============================
+# 🔁 UTILIDAD: MAPEAR ESTRATEGIA A ETIQUETA CORTA
+# ============================
+def estrategia_base_label(valor: str) -> str:
+    if not isinstance(valor, str):
+        return ""
+    v = valor.strip().upper()
+    if v.startswith("REDIFERIDO"):
+        return "REDIFERIDO"
+    if v.startswith("REESTRUCTURACION") or v.startswith("REESTRUCTURACIÓN"):
+        return "REESTRUCTURACIÓN"
+    if v.startswith("PRORROGA") or v.startswith("PRÓRROGA"):
+        return "PRÓRROGA"
+    if v.startswith("ABONAR"):
+        return "CANCELACIÓN DEL PAGO MÍNIMO"
+    return valor  # fallback
+
+# ============================
 # 🧭 VALIDACIÓN DE CÉDULA Y OBLIGACIONES
 # ============================
 if st.session_state.get("start_chat"):
@@ -111,6 +128,7 @@ if st.session_state.get("start_chat"):
             st.error(f"Error al cargar la base: {e}")
             st.stop()
 
+        # Filtrar por cédula
         cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
 
         if not cliente.empty:
@@ -125,42 +143,43 @@ if st.session_state.get("start_chat"):
             st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones>1 else ''}** registradas.")
             st.markdown("A continuación te presento el estado de cada una 👇")
 
+            # Columnas a mostrar
             cols_vis = ["ULTIMOS_CUENTA","TIPO_PRODUCTO","PAGO_MINIMO_MES","MORA_ACTUAL","ESTRATEGIA_ACTUAL"]
             obligaciones_vista = obligaciones_cliente[cols_vis].rename(columns={
                 "ULTIMOS_CUENTA":"Últimos dígitos",
                 "TIPO_PRODUCTO":"Producto",
                 "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
                 "MORA_ACTUAL":"Mora (días)",
-                "ESTRATEGIA_ACTUAL":"Estrategia actual"
+                "ESTRATEGIA_ACTUAL":"Estrategia"
             })
+
+            # Mapear estrategia a etiqueta corta
+            obligaciones_vista["Estrategia"] = obligaciones_vista["Estrategia"].apply(estrategia_base_label)
+
+            # Formatear valores numéricos
             obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(
                 obligaciones_vista["Pago mínimo mes ($)"], errors="coerce"
             ).fillna(0).map("{:,.0f}".format)
 
+            # Mostrar tabla con estilos
             st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
 
-           # —— SELECTOR DE OBLIGACIÓN ——
+            # —— SELECTOR DE OBLIGACIÓN ——
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
 
             opciones = [f"{row['Producto']} ({row['Últimos dígitos']})" for _, row in obligaciones_vista.iterrows()]
+            seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
 
-            # Guardamos la selección directamente en session_state (sin volver a asignarla)
-            seleccion = st.selectbox(
-            "Selecciona una opción:",
-            opciones,
-            key="obligacion_seleccionada"
-)
-
-if st.session_state.get("obligacion_seleccionada"):
-    st.info(f"✅ Has seleccionado {st.session_state['obligacion_seleccionada']}. "
-            "A continuación se mostrarán las opciones de negociación disponibles.")
-
+            if st.session_state.get("obligacion_seleccionada"):
+                st.info(f"✅ Has seleccionado {st.session_state['obligacion_seleccionada']}. "
+                        "A continuación se mostrarán las opciones de negociación disponibles.")
 
         else:
             # —— CÉDULA NO ENCONTRADA ——
             if st.session_state["intentos"] == 1:
-                st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
+                st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
+                           "Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
             elif st.session_state["intentos"] >= 2:
                 st.error("❌ El número ingresado no se encuentra registrado. Digita nuevamente tu número de cédula sin puntos o caracteres especiales.")
                 st.markdown("""
