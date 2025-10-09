@@ -75,7 +75,7 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PRINCIPAL (CENTRADO)
+# 🚀 BOTÓN PRINCIPAL
 # ============================
 c1, c2, c3 = st.columns([1, 2.4, 1])
 with c2:
@@ -137,7 +137,6 @@ if st.session_state.get("start_chat"):
             st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones>1 else ''}** registradas.")
             st.markdown("A continuación te presento el estado de cada una 👇")
 
-            # ---- Tabla de obligaciones ----
             cols_vis = ["ULTIMOS_CUENTA","TIPO_PRODUCTO","PAGO_MINIMO_MES","MORA_ACTUAL","ESTRATEGIA_ACTUAL"]
             obligaciones_vista = obligaciones_cliente[cols_vis].rename(columns={
                 "ULTIMOS_CUENTA":"Últimos dígitos",
@@ -154,7 +153,6 @@ if st.session_state.get("start_chat"):
 
             st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
 
-            # ---- Selector de obligación ----
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
 
@@ -174,66 +172,84 @@ if st.session_state.get("start_chat"):
 
                 # ---- Mensajes según estrategia ----
                 if estrategia == "REDIFERIDO CON PAGO":
+                    color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
                     con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REDIFERIDO SIN PAGO":
+                    color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
                     con una tasa del {tasa}."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REESTRUCTURACION CON PAGO":
+                    color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
                     con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REESTRUCTURACION SIN PAGO":
+                    color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
                     con una tasa del {tasa}."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "PRORROGA SIN PAGO":
+                    color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
                     de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
                     Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "No estoy interesado"]
                 elif estrategia == "PRORROGA CON PAGO":
+                    color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
                     de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
                     Realiza un abono de {abono} para aplicar la alternativa. Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "No estoy interesado"]
                 else:
+                    color = "#777"
                     mensaje = f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento."
                     cuotas = ["No estoy interesado"]
 
-                # ---- Mostrar mensaje ----
+                # ---- Mostrar mensaje (color institucional según estrategia) ----
                 st.markdown(f"""
-                <div style='padding:15px; background-color:#F9FAFB; border-radius:10px; border:1px solid #E5E7EB;'>
-                    <b>💡 Alternativa disponible:</b><br><br>{mensaje}<br><br>
-                    Responde con la letra correspondiente a la cantidad de cuotas que deseas:
+                <div style='
+                    padding:20px;
+                    background:linear-gradient(135deg, #ffffff, #f8f9ff);
+                    border-radius:15px;
+                    border:2px solid {color};
+                    box-shadow:0 4px 12px rgba(27,22,140,0.15);
+                    margin-top:10px;
+                '>
+                    <div style='font-size:1.1em; color:{color}; font-weight:700;'>
+                        💡 Alternativa disponible
+                    </div>
+                    <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
+                        {mensaje}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, key="cuota_elegida")
+                # ---- Desplegable de cuotas ----
+                cuotas = ["Selecciona una opción..."] + cuotas
+                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, key="cuota_elegida", index=0)
 
-                if seleccion_cuota and seleccion_cuota != "No estoy interesado":
+                if seleccion_cuota != "Selecciona una opción..." and seleccion_cuota != "No estoy interesado":
                     st.success(f"✅ Has seleccionado {seleccion_cuota}. ¡Excelente elección!")
                 elif seleccion_cuota == "No estoy interesado":
                     st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
 
         else:
-            # —— CÉDULA NO ENCONTRADA ——
             if st.session_state["intentos"] == 1:
                 st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
                            "Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
             elif st.session_state["intentos"] >= 2:
                 st.error("❌ El número ingresado no se encuentra registrado. Digita nuevamente tu número de cédula sin puntos o caracteres especiales.")
                 st.markdown("""
-                Te invitamos a comunicarte con nuestros asesores para validar tu información:<br>
+                Te invitamos a comunicarte con nuestros asesores:<br>
                 📞 <b>601 7491928</b><br>
                 💼 <b>Contacto Solutions S.A.S.</b><br>
-                💬 <a href="https://wa.me/573112878102?text=Hola%2C+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza" target="_blank">Escríbenos por WhatsApp</a>
+                💬 <a href="https://wa.me/573112878102?text=Hola,+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza" target="_blank">Escríbenos por WhatsApp</a>
                 """, unsafe_allow_html=True)
                 st.stop()
-
