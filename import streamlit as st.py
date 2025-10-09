@@ -77,12 +77,30 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PARA INICIAR
+# 🚀 BOTÓN PARA INICIAR (CENTRADO)
 # ============================
-if st.button("🚀 INICIAR CHATBOT"):
-    st.session_state["start_chat"] = True
-    st.session_state["intentos"] = 0
-
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <div style='display: flex; justify-content: center; align-items: center;'>
+        <form action='#' method='get'>
+            <button style='
+                background-color: #1B168C;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                padding: 14px 36px;
+                font-size: 1.1em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: 0.3s;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            ' type='submit'>🚀 INICIAR CHATBOT</button>
+        </form>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
 # ============================
