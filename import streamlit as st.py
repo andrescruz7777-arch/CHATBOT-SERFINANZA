@@ -96,24 +96,6 @@ Soy tu <span class="highlight">Asistente Virtual IA</span> de <b>Contacto Soluti
 Estoy aquí para brindarte información de tus productos y opciones de negociación.
 </div>
 """, unsafe_allow_html=True)
-
-# ============================
-# 🪪 CAMPO DE CÉDULA + BOTÓN SIGUIENTE
-# ============================
-
-cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
-
-# Botón adicional junto con la función Enter
-col1, col2, col3 = st.columns([1, 1, 1])
-with col2:
-    siguiente = st.button("➡️ Continuar", key="continuar_btn")
-
-# Enter o clic activan el flujo
-if (cedula and st.session_state.get("cedula_input")) or siguiente:
-    st.session_state["start_chat"] = True
-    st.session_state["intentos"] = 0
-    st.success(f"✅ Procesando información para el documento {cedula}...")
-
 # ============================
 # 🚀 BOTÓN SERFINANZA — CENTRADO + HOVER FUNCIONAL
 # ============================
@@ -153,6 +135,23 @@ st.markdown("""
     <button onclick="window.location.href='#'">🚀 INICIAR CHATBOT</button>
 </div>
 """, unsafe_allow_html=True)
+# ============================
+# 🪪 CAMPO DE CÉDULA + BOTÓN SIGUIENTE
+# ============================
+
+cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
+
+# Botón adicional junto con la función Enter
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    siguiente = st.button("➡️ Continuar", key="continuar_btn")
+
+# Enter o clic activan el flujo
+if (cedula and st.session_state.get("cedula_input")) or siguiente:
+    st.session_state["start_chat"] = True
+    st.session_state["intentos"] = 0
+    st.success(f"✅ Procesando información para el documento {cedula}...")
+
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
 # ============================
