@@ -66,15 +66,54 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================
-# 💬 MENSAJE DE BIENVENIDA
+# 💬 MENSAJE DE BIENVENIDA (MEJOR VISIBILIDAD Y CONTRASTE)
 # ============================
-st.markdown("<h1>💬 Hola, soy Andrés</h1>", unsafe_allow_html=True)
 st.markdown("""
-<div class="caption-text">
-Soy tu Asistente Virtual IA de <b>Contacto Solutions</b>, aliado estratégico de <b>Banco Serfinanza</b>.  
-Estoy aquí para brindarte información de tus productos y opciones de negociación.  
+<style>
+/* Detectar tema oscuro o claro automáticamente */
+[data-theme="light"] .intro-text {
+    color: #1B168C; /* Azul Serfinanza en tema claro */
+}
+[data-theme="dark"] .intro-text {
+    color: #FFFFFF; /* Blanco en tema oscuro */
+}
+.intro-text {
+    text-align: center;
+    font-size: 1.15em;
+    font-weight: 500;
+    line-height: 1.6em;
+    margin-top: 15px;
+    transition: color 0.3s ease;
+}
+.highlight {
+    color: #F43B63; /* Rojo Serfinanza */
+    font-weight: 600;
+}
+</style>
+
+<div class="intro-text">
+Soy tu <span class="highlight">Asistente Virtual IA</span> de <b>Contacto Solutions</b>, aliado estratégico de <b>Banco Serfinanza</b>.  
+Estoy aquí para brindarte información de tus productos y opciones de negociación.
 </div>
 """, unsafe_allow_html=True)
+
+# ============================
+# 🪪 CAMPO DE CÉDULA + BOTÓN SIGUIENTE
+# ============================
+
+cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
+
+# Botón adicional junto con la función Enter
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    siguiente = st.button("➡️ Continuar", key="continuar_btn")
+
+# Enter o clic activan el flujo
+if (cedula and st.session_state.get("cedula_input")) or siguiente:
+    st.session_state["start_chat"] = True
+    st.session_state["intentos"] = 0
+    st.success(f"✅ Procesando información para el documento {cedula}...")
+
 # ============================
 # 🚀 BOTÓN SERFINANZA — CENTRADO + HOVER FUNCIONAL
 # ============================
