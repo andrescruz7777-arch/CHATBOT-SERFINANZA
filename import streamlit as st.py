@@ -150,11 +150,11 @@ if st.session_state.get("start_chat"):
                 "TIPO_PRODUCTO":"Producto",
                 "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
                 "MORA_ACTUAL":"Mora (días)",
-                "ESTRATEGIA_ACTUAL":"Estrategia"
+                "ESTRATEGIA_ACTUAL":"Alternativa"
             })
 
             # Mapear estrategia a etiqueta corta
-            obligaciones_vista["Estrategia"] = obligaciones_vista["Estrategia"].apply(estrategia_base_label)
+            obligaciones_vista["Alternativa"] = obligaciones_vista["Alternativa"].apply(estrategia_base_label)
 
             # Formatear valores numéricos
             obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(
