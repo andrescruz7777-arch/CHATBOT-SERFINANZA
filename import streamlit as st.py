@@ -15,7 +15,6 @@ if "intentos" not in st.session_state:
     st.session_state["intentos"] = 0
 if "cuota_elegida" not in st.session_state:
     st.session_state["cuota_elegida"] = None
-
 # ============================
 # 🎨 ESTILOS CORPORATIVOS
 # ============================
@@ -56,6 +55,107 @@ h1, h2, h3 {
     color: #F43B63; 
     font-weight: 600; 
 }
+
+/* ===========================
+   🟦 BOTONES
+=========================== */
+div.stButton > button, 
+form button[kind="primary"] {
+    background-color:#1B168C !important;
+    color:#FFFFFF !important;           /* 🔹 Texto blanco */
+    border:none;
+    border-radius:12px !important;
+    padding:16px 60px !important;
+    font-size:1.1em !important;
+    font-weight:600 !important;
+    cursor:pointer;
+    transition:all .3s ease !important;
+    box-shadow:0 4px 15px rgba(27,22,140,.3) !important;
+}
+div.stButton > button:hover, 
+form button[kind="primary"]:hover {
+    background-color:#F43B63 !important;
+    color:#FFFFFF !important;
+    box-shadow:0 0 20px rgba(244,59,99,.7) !important;
+    transform:scale(1.05);
+}
+
+/* ===========================
+   🪪 CAMPO DE CÉDULA
+=========================== */
+label, 
+.stTextInput label {
+    color: #1B168C !important;
+    font-weight: 700 !important;
+}
+
+.stTextInput > div > div {
+    background-color: #1B168C !important;
+    border: 2px solid #F43B63 !important;
+    border-radius: 10px !important;
+}
+
+.stTextInput > div > div > input {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.stTextInput input::placeholder {
+    color: #E5E7EB !important;
+    opacity: 1 !important;
+}
+
+/* ===========================
+   📊 TABLA
+=========================== */
+table { 
+    width:100%; 
+    border-collapse:collapse; 
+    border-radius:10px; 
+    overflow:hidden; 
+}
+th { 
+    background:#1B168C; 
+    color:#FFFFFF; 
+    text-align:center; 
+    padding:10px; 
+}
+td { 
+    text-align:center; 
+    padding:8px; 
+    border-bottom:1px solid #E5E7EB; 
+    color:#000000; 
+}
+tr:nth-child(even){ 
+    background:#F9FAFB; 
+}
+tr:hover{ 
+    background:#F43B63; 
+    color:#FFFFFF; 
+    transition:.2s; 
+}
+
+/* ===========================
+   ⚠️ MENSAJES (WARNING / ERROR / SUCCESS)
+=========================== */
+.stAlert, .st-emotion-cache-ue6h4q, .st-emotion-cache-1wivap2 {
+    color: #000000 !important;        /* Texto negro */
+    font-weight: 600 !important;
+}
+.stAlert p, .stAlert span, .stAlert div {
+    color: #000000 !important;        /* Texto negro también dentro */
+}
+
+/* Ajuste para íconos de alerta */
+.st-emotion-cache-1wbqy5l, .st-emotion-cache-1avcm0n {
+    color: #000000 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 /* ===========================
    🟦 BOTONES
