@@ -328,3 +328,81 @@ if st.session_state.get("cedula_validada", False):
         """, unsafe_allow_html=True)
     elif seleccion_cuota == "No estoy interesado":
         st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
+            # ============================
+    # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA
+    # ============================
+    cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
+    if len(cliente_en_mora) >= 2:
+        st.markdown(f"""
+        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
+        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:15px;'>
+            <div style='font-size:1.1em; color:#1B168C; font-weight:700;'>📌 Tienes más obligaciones en mora</div>
+            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
+                Excelente, hemos registrado tu negociación.<br>
+                Ahora continuemos con tu otra obligación que presenta mora, para ayudarte a normalizar completamente tu estado con el <b>Banco Serfinanza</b>.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ============================
+    # 💬 CHAT IA DE PERSUASIÓN (GPT-4O-MINI)
+    # ============================
+    import openai
+    from openai import OpenAI
+    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
+    box-shadow:0 4px 12px rgba(27,22,140,0.15);'>
+        <div style='font-size:1.2em; font-weight:700; color:#1B168C;'>🤖 Asesor Virtual IA – Banco Serfinanza</div>
+        <div style='margin-top:8px; font-size:1em; color:#333;'>
+            💬 Entiendo que no deseas tomar el acuerdo por ahora.<br>
+            Permíteme asesorarte para tomar la mejor decisión sobre los <b>beneficios del acuerdo o sus condiciones</b>.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Inicializa historial de chat si no existe
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
+
+    # Muestra el historial previo
+    for msg in st.session_state["chat_history"]:
+        if msg["role"] == "user":
+            st.markdown(f"""
+            <div style='text-align:right; margin-top:10px;'>
+                <div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>
+                    {msg["content"]}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style='text-align:left; margin-top:10px;'>
+                <div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C;
+                            padding:10px 14px; border-radius:15px; max-width:80%;'>
+                    {msg["content"]}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # Campo de entrada de chat
+    user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
+
+    if user_msg:
+        st.session_state["chat_history"].append({"role": "user", "content": user_msg})
+
+        # Genera respuesta IA con gpt-4o-mini
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios de los acuerdos, cómo ayudan a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
+                *st.session_state["chat_history"]
+            ]
+        )
+
+        ai_reply = response.choices[0].message.content
+        st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
+        st.rerun()
+
