@@ -74,6 +74,18 @@ tr:hover{ background:#F43B63; color:#FFFFFF; transition:.2s; }
 </style>
 """, unsafe_allow_html=True)
 
+/* CAMPOS DE TEXTO (entrada de cédula) */
+label, .stTextInput label, .stTextInput div[data-baseweb="input"] input {
+    color: #FFFFFF !important;           /* 🔹 Texto blanco */
+    font-weight: 600 !important;
+}
+.stTextInput > div > div > input {
+    background-color: #1B168C !important; /* 🔹 Fondo azul institucional */
+    color: #FFFFFF !important;            /* 🔹 Texto dentro blanco */
+    border-radius: 8px !important;
+    border: 1.5px solid #F43B63 !important; /* 🔹 Borde rosado corporativo */
+    padding: 10px !important;
+}
 # ============================
 # 🖼️ CABECERA
 # ============================
