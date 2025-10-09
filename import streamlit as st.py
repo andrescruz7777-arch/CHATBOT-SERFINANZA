@@ -10,20 +10,22 @@ if "start_chat" not in st.session_state:
     st.session_state["start_chat"] = False
 if "intentos" not in st.session_state:
     st.session_state["intentos"] = 0
+if "cuota_elegida" not in st.session_state:
+    st.session_state["cuota_elegida"] = None
 
 # ============================
 # 🎨 ESTILOS PERSONALIZADOS
 # ============================
 st.markdown("""
 <style>
-body { background-color: #FFFFFF; }
+body { background-color: #FFFFFF !important; }
 
 /* CABECERA */
 .header-container {
     display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
 }
 
-/* TÍTULOS */
+/* TITULOS */
 h1, h2, h3 { color: #1B168C; text-align: center; }
 
 /* TEXTO DE BIENVENIDA */
@@ -185,30 +187,24 @@ if st.session_state.get("start_chat"):
 
                 color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-                # ---- MENSAJES DE OFRECIMIENTO ----
-                # (textos exactos como solicitaste)
-                if estrategia == "REDIFERIDO CON PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado."""
-                elif estrategia == "REDIFERIDO SIN PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado."""
-                elif estrategia == "REESTRUCTURACION CON PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado."""
-                elif estrategia == "REESTRUCTURACION SIN PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado."""
-                elif estrategia == "PRORROGA SIN PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
-                elif estrategia == "PRORROGA CON PAGO":
-                    mensaje = f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
-                else:
-                    mensaje = f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento."
+                # ---- MENSAJE DE OFRECIMIENTO ----
+                mensajes = {
+                    "REDIFERIDO CON PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+                    "REDIFERIDO SIN PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+                    "REESTRUCTURACION CON PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+                    "REESTRUCTURACION SIN PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+                    "PRORROGA SIN PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.""",
+                    "PRORROGA CON PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
+                }
 
-                # ---- MOSTRAR MENSAJE ----
+                mensaje = mensajes.get(estrategia, f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento.")
+
                 st.markdown(f"""
-                <div style='padding:20px; background:linear-gradient(135deg, #ffffff, #f8f9ff);
+                <div style='padding:20px; background:#FFFFFF;
                     border-radius:15px; border:2px solid {color};
                     box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
                     <div style='font-size:1.1em; color:{color}; font-weight:700;'>💡 Alternativa disponible</div>
@@ -217,26 +213,23 @@ if st.session_state.get("start_chat"):
                 """, unsafe_allow_html=True)
 
                 cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, key="cuota_elegida", index=0)
+                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, index=0, key="cuota_elegida")
 
-                if seleccion_cuota != "Selecciona una opción..." and seleccion_cuota != "No estoy interesado":
-                    if estrategia == "REDIFERIDO CON PAGO":
-                        confirm = f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza."
-                    elif estrategia == "REDIFERIDO SIN PAGO":
-                        confirm = f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza."
-                    elif estrategia == "REESTRUCTURACION CON PAGO":
-                        confirm = f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza."
-                    elif estrategia == "REESTRUCTURACION SIN PAGO":
-                        confirm = f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza."
-                    elif estrategia == "PRORROGA SIN PAGO":
-                        confirm = f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza."
-                    elif estrategia == "PRORROGA CON PAGO":
-                        confirm = f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza."
-                    else:
-                        confirm = ""
+                # ---- CONFIRMACIÓN AUTOMÁTICA ----
+                if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
+                    st.session_state["cuota_elegida"] = seleccion_cuota
+                    confirmaciones = {
+                        "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+                        "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+                        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza.",
+                        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza.",
+                        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza.",
+                        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza."
+                    }
 
+                    confirm = confirmaciones.get(estrategia, "")
                     st.markdown(f"""
-                    <div style='padding:20px; background:linear-gradient(135deg, #ffffff, #f8f9ff);
+                    <div style='padding:20px; background:#FFFFFF;
                         border-radius:15px; border:2px solid {color};
                         box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
                         <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
