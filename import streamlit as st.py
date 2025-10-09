@@ -6,17 +6,22 @@ import pandas as pd
 # ============================
 st.set_page_config(page_title="💬 Chatbot IA - Banco Serfinanza", layout="centered")
 
-# Variables de control
-for key in ["start_chat", "intentos", "cuota_elegida"]:
-    if key not in st.session_state:
-        st.session_state[key] = False if key == "start_chat" else 0 if key == "intentos" else None
+# Estado persistente
+if "start_chat" not in st.session_state:
+    st.session_state["start_chat"] = False
+if "cedula_validada" not in st.session_state:
+    st.session_state["cedula_validada"] = False
+if "intentos" not in st.session_state:
+    st.session_state["intentos"] = 0
+if "cuota_elegida" not in st.session_state:
+    st.session_state["cuota_elegida"] = None
 
 # ============================
-# 🎨 ESTILOS PERSONALIZADOS
+# 🎨 ESTILOS CORPORATIVOS
 # ============================
 st.markdown("""
 <style>
-html, body, [class*="css"] {
+html, body, .stApp, [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
     color: #1B168C !important;
 }
@@ -29,7 +34,7 @@ html, body, [class*="css"] {
 /* TITULOS */
 h1, h2, h3 { color: #1B168C !important; text-align: center; }
 
-/* TEXTO DE BIENVENIDA */
+/* TEXTO INICIAL */
 .intro-text {
     text-align: center;
     font-size: 1.15em;
@@ -40,7 +45,7 @@ h1, h2, h3 { color: #1B168C !important; text-align: center; }
 }
 .highlight { color: #F43B63; font-weight: 600; }
 
-/* BOTONES BLANCOS */
+/* BOTONES */
 div.stButton > button, form button[kind="primary"] {
     background-color:#1B168C !important;
     color:#FFFFFF !important;
@@ -62,9 +67,9 @@ div.stButton > button:hover, form button[kind="primary"]:hover {
 
 /* TABLA */
 table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; }
-th { background:#1B168C; color:#FFFFFF; text-align:center; padding:8px; }
-td { text-align:center; padding:6px; border-bottom:1px solid #E5E7EB; color:#000000; }
-tr:nth-child(even){ background:#F3F4F6; }
+th { background:#1B168C; color:#FFFFFF; text-align:center; padding:10px; }
+td { text-align:center; padding:8px; border-bottom:1px solid #E5E7EB; color:#000000; }
+tr:nth-child(even){ background:#F9FAFB; }
 tr:hover{ background:#F43B63; color:#FFFFFF; transition:.2s; }
 </style>
 """, unsafe_allow_html=True)
@@ -91,37 +96,29 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PRINCIPAL
+# 🚀 BOTÓN INICIAR
 # ============================
 col1, col2, col3 = st.columns([1, 2.4, 1])
 with col2:
-    start = st.button("🚀 INICIAR CHATBOT", key="btn_iniciar_chatbot")
-
-if start:
-    st.session_state["start_chat"] = True
-    st.session_state["intentos"] = 0
+    if st.button("🚀 INICIAR CHATBOT"):
+        st.session_state["start_chat"] = True
 
 # ============================
-# MAPEO DE ESTRATEGIAS
+# FUNCIÓN NORMALIZAR ESTRATEGIAS
 # ============================
 def estrategia_base_label(valor: str) -> str:
-    if not isinstance(valor, str):
-        return ""
+    if not isinstance(valor, str): return ""
     v = valor.strip().upper()
-    if v.startswith("REDIFERIDO"):
-        return "REDIFERIDO"
-    if v.startswith("REESTRUCTURACION") or v.startswith("REESTRUCTURACIÓN"):
-        return "REESTRUCTURACIÓN"
-    if v.startswith("PRORROGA") or v.startswith("PRÓRROGA"):
-        return "PRÓRROGA"
-    if v.startswith("ABONAR"):
-        return "CANCELACIÓN DEL PAGO MÍNIMO"
+    if v.startswith("REDIFERIDO"): return "REDIFERIDO"
+    if v.startswith("REESTRUCTURACION") or v.startswith("REESTRUCTURACIÓN"): return "REESTRUCTURACIÓN"
+    if v.startswith("PRORROGA") or v.startswith("PRÓRROGA"): return "PRÓRROGA"
+    if v.startswith("ABONAR"): return "CANCELACIÓN DEL PAGO MÍNIMO"
     return valor
 
 # ============================
-# VALIDACIÓN DE CÉDULA
+# 🔍 VALIDACIÓN DE CÉDULA
 # ============================
-if st.session_state.get("start_chat"):
+if st.session_state["start_chat"]:
     st.markdown("<hr><br>", unsafe_allow_html=True)
     st.subheader("🔍 Verificación de identidad")
 
@@ -132,8 +129,6 @@ if st.session_state.get("start_chat"):
             submitted = st.form_submit_button("➡️ Continuar")
 
     if submitted and cedula:
-        st.session_state["intentos"] += 1
-
         try:
             data = pd.read_excel("base_bot_serfinanza.xls")
         except Exception as e:
@@ -141,104 +136,104 @@ if st.session_state.get("start_chat"):
             st.stop()
 
         cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
+        if cliente.empty:
+            st.warning("⚠️ No encontramos información para ese documento.")
+            st.stop()
+        else:
+            st.session_state["cedula_validada"] = True
+            st.session_state["cliente_data"] = cliente
 
-        if not cliente.empty:
-            st.success(f"✅ Perfecto, encontramos información asociada al documento {cedula}.")
-            st.markdown("En los próximos pasos podrás visualizar tus obligaciones y opciones de negociación.")
+# ============================
+# 🧭 DETALLE DE OBLIGACIONES
+# ============================
+if st.session_state.get("cedula_validada", False):
+    cliente = st.session_state["cliente_data"]
+    obligaciones_cliente = cliente.copy()
+    total_obligaciones = len(obligaciones_cliente)
+    nombre_cliente = str(obligaciones_cliente["NOMBRE_FINAL"].iloc[0]).title()
 
-            obligaciones_cliente = cliente.copy()
-            total_obligaciones = len(obligaciones_cliente)
-            nombre_cliente = str(obligaciones_cliente["NOMBRE_FINAL"].iloc[0]).title()
+    st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones>1 else ''}** registradas.")
+    st.markdown("A continuación te presento el estado de cada una 👇")
 
-            st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones>1 else ''}** registradas.")
-            st.markdown("A continuación te presento el estado de cada una 👇")
+    cols_vis = ["ULTIMOS_CUENTA","TIPO_PRODUCTO","PAGO_MINIMO_MES","MORA_ACTUAL","ESTRATEGIA_ACTUAL"]
+    obligaciones_vista = obligaciones_cliente[cols_vis].rename(columns={
+        "ULTIMOS_CUENTA":"Últimos dígitos",
+        "TIPO_PRODUCTO":"Producto",
+        "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
+        "MORA_ACTUAL":"Mora (días)",
+        "ESTRATEGIA_ACTUAL":"Alternativa"
+    })
 
-            cols_vis = ["ULTIMOS_CUENTA","TIPO_PRODUCTO","PAGO_MINIMO_MES","MORA_ACTUAL","ESTRATEGIA_ACTUAL"]
-            obligaciones_vista = obligaciones_cliente[cols_vis].rename(columns={
-                "ULTIMOS_CUENTA":"Últimos dígitos",
-                "TIPO_PRODUCTO":"Producto",
-                "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
-                "MORA_ACTUAL":"Mora (días)",
-                "ESTRATEGIA_ACTUAL":"Alternativa"
-            })
+    obligaciones_vista["Alternativa"] = obligaciones_vista["Alternativa"].apply(estrategia_base_label)
+    obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(
+        obligaciones_vista["Pago mínimo mes ($)"], errors="coerce"
+    ).fillna(0).map("${:,.0f}".format)
 
-            obligaciones_vista["Alternativa"] = obligaciones_vista["Alternativa"].apply(estrategia_base_label)
-            obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(
-                obligaciones_vista["Pago mínimo mes ($)"], errors="coerce"
-            ).fillna(0).map("${:,.0f}".format)
+    st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
 
-            st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
+    opciones = [f"{row['Producto']} ({row['Últimos dígitos']})" for _, row in obligaciones_vista.iterrows()]
+    seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
 
-            opciones = [f"{row['Producto']} ({row['Últimos dígitos']})" for _, row in obligaciones_vista.iterrows()]
-            seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
+    obligacion_sel = obligaciones_cliente.iloc[opciones.index(seleccion)]
+    estrategia = obligacion_sel["ESTRATEGIA_ACTUAL"].strip().upper()
+    nombre = str(obligacion_sel["NOMBRE_FINAL"]).title()
+    producto = obligacion_sel["TIPO_PRODUCTO"]
+    cuenta = obligacion_sel["ULTIMOS_CUENTA"]
+    saldo = f"${obligacion_sel.get('ULTIMO_SALDO_CAPITAL', 0):,.0f}"
+    tasa = obligacion_sel.get("TASA", "según condiciones vigentes")
+    abono = f"${obligacion_sel.get('VALOR_ABONO', 0):,.0f}"
+    pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
+    color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-            if seleccion:
-                obligacion_sel = obligaciones_cliente.iloc[opciones.index(seleccion)]
-                estrategia = obligacion_sel["ESTRATEGIA_ACTUAL"].strip().upper()
-                nombre = str(obligacion_sel["NOMBRE_FINAL"]).title()
-                producto = obligacion_sel["TIPO_PRODUCTO"]
-                cuenta = obligacion_sel["ULTIMOS_CUENTA"]
-                saldo = f"${obligacion_sel.get('ULTIMO_SALDO_CAPITAL', 0):,.0f}"
-                tasa = obligacion_sel.get("TASA", "según condiciones vigentes")
-                abono = f"${obligacion_sel.get('VALOR_ABONO', 0):,.0f}"
-                pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
-                color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
+    # ============= MENSAJE OFRECIMIENTO ============
+    mensajes = {
+        "REDIFERIDO CON PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+        "REDIFERIDO SIN PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+        "REESTRUCTURACION CON PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+        "REESTRUCTURACION SIN PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
+        A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
+        "PRORROGA SIN PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.""",
+        "PRORROGA CON PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
+    }
 
-                # ------------------------
-                # MENSAJE DE OFRECIMIENTO
-                # ------------------------
-                mensajes = {
-                    "REDIFERIDO CON PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-                    "REDIFERIDO SIN PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-                    "REESTRUCTURACION CON PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-                    "REESTRUCTURACION SIN PAGO": f"""{nombre} Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
-                    A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
-                    "PRORROGA SIN PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.""",
-                    "PRORROGA CON PAGO": f"""{nombre} Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} respondiendo con la letra respectiva acorde con el número de cuotas que deseas A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."""
-                }
+    mensaje = mensajes.get(estrategia, f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento.")
 
-                mensaje = mensajes.get(estrategia, f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento.")
+    st.markdown(f"""
+    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
+    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
+        <div style='font-size:1.1em; color:{color}; font-weight:700;'>💡 Alternativa disponible</div>
+        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{mensaje}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div style='padding:20px; background:#FFFFFF;
-                    border-radius:15px; border:2px solid {color};
-                    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-                    <div style='font-size:1.1em; color:{color}; font-weight:700;'>💡 Alternativa disponible</div>
-                    <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{mensaje}</div>
-                </div>
-                """, unsafe_allow_html=True)
+    # ============= DESPLEGABLE Y CONFIRMACIÓN ============
+    cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
+    seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
-                # ------------------------
-                # DESPLEGABLE Y CONFIRMACIÓN
-                # ------------------------
-                cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, index=0, key="cuota_tmp")
+    if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
+        confirmaciones = {
+            "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+            "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+            "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
+            "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
+            "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
+            "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
+        }
 
-                if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
-                    st.session_state["cuota_elegida"] = seleccion_cuota
-                    confirmaciones = {
-                        "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
-                        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
-                        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
-                        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
-                    }
+        confirm = confirmaciones.get(estrategia, "")
+        st.markdown(f"""
+        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
+        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
+            <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
+            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    elif seleccion_cuota == "No estoy interesado":
+        st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
 
-                    confirm = confirmaciones.get(estrategia, "")
-                    st.markdown(f"""
-                    <div style='padding:20px; background:#FFFFFF;
-                        border-radius:15px; border:2px solid {color};
-                        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-                        <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
-                        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                elif seleccion_cuota == "No estoy interesado":
-                    st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
