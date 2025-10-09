@@ -76,33 +76,44 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 </div>
 """, unsafe_allow_html=True)
 # ============================
-# 🚀 BOTÓN PARA INICIAR CHATBOT (CENTRADO + COLORES SERFINANZA)
+# 🚀 BOTÓN SERFINANZA — CENTRADO + HOVER FUNCIONAL
 # ============================
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown(
-    """
-    <div style='display: flex; justify-content: center; align-items: center;'>
-        <form action='#' method='get'>
-            <button style='
-                background-color: #1B168C;              /* Azul Serfinanza */
-                color: white;
-                border: none;
-                border-radius: 12px;
-                padding: 14px 40px;
-                font-size: 1.1em;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(27,22,140,0.3); /* sombra azul */
-            '
-            onmouseover="this.style.backgroundColor='#F43B63'; this.style.boxShadow='0 0 18px rgba(244,59,99,0.7)'; this.style.transform='scale(1.07)';"
-            onmouseout="this.style.backgroundColor='#1B168C'; this.style.boxShadow='0 4px 15px rgba(27,22,140,0.3)'; this.style.transform='scale(1)';"
-            type='submit'>🚀 INICIAR CHATBOT</button>
-        </form>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
+st.markdown("""
+<style>
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+}
+
+/* Estilos base */
+.button-wrapper button {
+    background-color: #1B168C;              /* Azul Serfinanza */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 42px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(27,22,140,0.3); /* sombra azul */
+}
+
+/* Hover con brillo rojo */
+.button-wrapper button:hover {
+    background-color: #F43B63;              /* Rojo Serfinanza */
+    box-shadow: 0 0 20px rgba(244,59,99,0.7); /* brillo rojo */
+    transform: scale(1.07);
+}
+</style>
+
+<div class="button-wrapper">
+    <button onclick="window.location.href='#'">🚀 INICIAR CHATBOT</button>
+</div>
+""", unsafe_allow_html=True)
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
 # ============================
