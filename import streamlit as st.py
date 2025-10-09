@@ -15,6 +15,7 @@ if "intentos" not in st.session_state:
     st.session_state["intentos"] = 0
 if "cuota_elegida" not in st.session_state:
     st.session_state["cuota_elegida"] = None
+
 # ============================
 # 🎨 ESTILOS CORPORATIVOS
 # ============================
@@ -155,75 +156,6 @@ tr:hover{
 }
 </style>
 """, unsafe_allow_html=True)
-/* ===========================
-   🪪 CAMPOS DE TEXTO (CÉDULA)
-=========================== */
-label, 
-.stTextInput label {
-    color: #1B168C !important;  /* 🔹 Azul institucional */
-    font-weight: 700 !important;
-}
-
-.stTextInput > div > div {
-    background-color: #1B168C !important; /* 🔹 Fondo azul */
-    border: 2px solid #F43B63 !important; /* 🔹 Borde rosado */
-    border-radius: 10px !important;
-}
-
-.stTextInput > div > div > input {
-    background-color: transparent !important;
-    color: #FFFFFF !important;            /* 🔹 Texto blanco */
-    font-weight: 600 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.stTextInput input::placeholder {
-    color: #E5E7EB !important;
-    opacity: 1 !important;
-}
-
-/* ===========================
-   📊 TABLA
-=========================== */
-table { 
-    width:100%; 
-    border-collapse:collapse; 
-    border-radius:10px; 
-    overflow:hidden; 
-}
-th { 
-    background:#1B168C; 
-    color:#FFFFFF; 
-    text-align:center; 
-    padding:10px; 
-}
-td { 
-    text-align:center; 
-    padding:8px; 
-    border-bottom:1px solid #E5E7EB; 
-    color:#000000; 
-}
-tr:nth-child(even){ 
-    background:#F9FAFB; 
-}
-tr:hover{ 
-    background:#F43B63; 
-    color:#FFFFFF; 
-    transition:.2s; 
-}
-
-/* ===========================
-   ⚠️ MENSAJES (INFO / WARNING / ERROR)
-=========================== */
-[data-baseweb="toast"] div, 
-div[data-testid="stNotification"] p, 
-div[data-testid="stNotification"] span {
-    color: #000000 !important;     /* 🔹 Texto negro */
-    font-weight: 600 !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # ============================
 # 🖼️ CABECERA
@@ -302,6 +234,7 @@ if st.session_state["start_chat"]:
         else:
             st.session_state["cedula_validada"] = True
             st.session_state["cliente_data"] = cliente
+
 # ============================
 # 🧭 DETALLE DE OBLIGACIONES
 # ============================
@@ -395,4 +328,3 @@ if st.session_state.get("cedula_validada", False):
         """, unsafe_allow_html=True)
     elif seleccion_cuota == "No estoy interesado":
         st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
-
