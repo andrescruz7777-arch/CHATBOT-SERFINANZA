@@ -97,7 +97,7 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 # ============================
 st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1, 2, 1])
-with col2.5:
+with col2:
     start = st.button("🚀 INICIAR CHATBOT")
 
 # Si el usuario inicia, creamos el estado
