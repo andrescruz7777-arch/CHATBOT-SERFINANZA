@@ -93,39 +93,41 @@ Estoy aquí para brindarte información de tus productos y opciones de negociaci
 """, unsafe_allow_html=True)
 
 # ============================
-# 🚀 BOTÓN PRINCIPAL (CENTRADO PERFECTO Y FUNCIONAL)
+# 🚀 BOTÓN PRINCIPAL (ALARGADO Y VISUALMENTE CENTRADO)
 # ============================
+
+# CSS del botón institucional Serfinanza
 st.markdown("""
 <style>
-.start-button-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 25px;
-}
-
-/* Botón principal Serfinanza */
-div.start-button-container > button {
-    background-color: #1B168C;
+div.stButton > button:first-child {
+    background-color: #1B168C;              /* Azul Serfinanza */
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 14px 42px;
-    font-size: 1.1em;
+    padding: 16px 80px;                     /* ⬅️ más ancho y alto */
+    font-size: 1.15em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(27,22,140,0.3);
 }
-
-/* Hover rojo con brillo */
-div.start-button-container > button:hover {
-    background-color: #F43B63;
+div.stButton > button:first-child:hover {
+    background-color: #F43B63;              /* Rojo hover */
     box-shadow: 0 0 20px rgba(244,59,99,0.7);
-    transform: scale(1.07);
+    transform: scale(1.06);
 }
 </style>
 """, unsafe_allow_html=True)
+
+# Usamos columnas proporcionales (centrado visual)
+col1, col2, col3 = st.columns([1, 2.4, 1])
+with col2:
+    start = st.button("🚀 INICIAR CHATBOT")
+
+# Estado del flujo
+if start:
+    st.session_state["start_chat"] = True
+    st.session_state["intentos"] = 0
 
 # Usamos un contenedor flex y un st.button real
 with st.container():
