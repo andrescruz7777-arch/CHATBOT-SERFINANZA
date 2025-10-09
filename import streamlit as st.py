@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from openai import OpenAI
 
 # ============================
 # ⚙️ CONFIGURACIÓN INICIAL
@@ -21,139 +22,44 @@ if "cuota_elegida" not in st.session_state:
 # ============================
 st.markdown("""
 <style>
-/* ===========================
-   🎨 ESTILOS GLOBALES
-=========================== */
 html, body, .stApp, [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
     color: #1B168C !important;
 }
-
-/* CABECERA */
 .header-container {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 0 2rem;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
 }
-
-/* TITULOS */
-h1, h2, h3 { 
-    color: #1B168C !important; 
-    text-align: center; 
-}
-
-/* TEXTO INICIAL */
+h1, h2, h3 { color: #1B168C !important; text-align: center; }
 .intro-text {
-    text-align: center;
-    font-size: 1.15em;
-    font-weight: 500;
-    line-height: 1.6em;
-    margin-top: 15px;
-    color: #1B168C !important;
+    text-align: center; font-size: 1.15em; font-weight: 500; line-height: 1.6em;
+    margin-top: 15px; color: #1B168C !important;
 }
-.highlight { 
-    color: #F43B63; 
-    font-weight: 600; 
-}
+.highlight { color: #F43B63; font-weight: 600; }
 
-/* ===========================
-   🟦 BOTONES
-=========================== */
-div.stButton > button, 
-form button[kind="primary"] {
-    background-color:#1B168C !important;
-    color:#FFFFFF !important;           /* 🔹 Texto blanco */
-    border:none;
-    border-radius:12px !important;
-    padding:16px 60px !important;
-    font-size:1.1em !important;
-    font-weight:600 !important;
-    cursor:pointer;
-    transition:all .3s ease !important;
+div.stButton > button, form button[kind="primary"] {
+    background-color:#1B168C !important; color:#FFFFFF !important; border:none;
+    border-radius:12px !important; padding:16px 60px !important;
+    font-size:1.1em !important; font-weight:600 !important;
     box-shadow:0 4px 15px rgba(27,22,140,.3) !important;
 }
-div.stButton > button:hover, 
-form button[kind="primary"]:hover {
-    background-color:#F43B63 !important;
-    color:#FFFFFF !important;
-    box-shadow:0 0 20px rgba(244,59,99,.7) !important;
-    transform:scale(1.05);
+div.stButton > button:hover, form button[kind="primary"]:hover {
+    background-color:#F43B63 !important; transform:scale(1.05);
 }
-
-/* ===========================
-   🪪 CAMPO DE CÉDULA
-=========================== */
-label, 
-.stTextInput label {
-    color: #1B168C !important;
-    font-weight: 700 !important;
-}
-
+label, .stTextInput label { color: #1B168C !important; font-weight: 700 !important; }
 .stTextInput > div > div {
-    background-color: #1B168C !important;
-    border: 2px solid #F43B63 !important;
+    background-color: #1B168C !important; border: 2px solid #F43B63 !important;
     border-radius: 10px !important;
 }
-
 .stTextInput > div > div > input {
-    background-color: transparent !important;
-    color: #FFFFFF !important;
-    font-weight: 600 !important;
-    border: none !important;
-    box-shadow: none !important;
+    background-color: transparent !important; color: #FFFFFF !important;
+    font-weight: 600 !important; border: none !important;
 }
-
-.stTextInput input::placeholder {
-    color: #E5E7EB !important;
-    opacity: 1 !important;
-}
-
-/* ===========================
-   📊 TABLA
-=========================== */
-table { 
-    width:100%; 
-    border-collapse:collapse; 
-    border-radius:10px; 
-    overflow:hidden; 
-}
-th { 
-    background:#1B168C; 
-    color:#FFFFFF; 
-    text-align:center; 
-    padding:10px; 
-}
-td { 
-    text-align:center; 
-    padding:8px; 
-    border-bottom:1px solid #E5E7EB; 
-    color:#000000; 
-}
-tr:nth-child(even){ 
-    background:#F9FAFB; 
-}
-tr:hover{ 
-    background:#F43B63; 
-    color:#FFFFFF; 
-    transition:.2s; 
-}
-
-/* ===========================
-   ⚠️ MENSAJES (WARNING / ERROR / SUCCESS)
-=========================== */
-.stAlert, .st-emotion-cache-ue6h4q, .st-emotion-cache-1wivap2 {
-    color: #000000 !important;        /* Texto negro */
-    font-weight: 600 !important;
-}
-.stAlert p, .stAlert span, .stAlert div {
-    color: #000000 !important;        /* Texto negro también dentro */
-}
-
-/* Ajuste para íconos de alerta */
-.st-emotion-cache-1wbqy5l, .st-emotion-cache-1avcm0n {
-    color: #000000 !important;
-}
+.stTextInput input::placeholder { color: #E5E7EB !important; opacity: 1 !important; }
+table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; }
+th { background:#1B168C; color:#FFFFFF; text-align:center; padding:10px; }
+td { text-align:center; padding:8px; border-bottom:1px solid #E5E7EB; color:#000000; }
+tr:nth-child(even){ background:#F9FAFB; } tr:hover{ background:#F43B63; color:#FFFFFF; }
+.stAlert p, .stAlert span, .stAlert div { color: #000000 !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -208,13 +114,8 @@ if st.session_state["start_chat"]:
     c1, c2, c3 = st.columns([1, 1.6, 1])
     with c2:
         with st.form("form_cedula", clear_on_submit=False):
-            cedula = st.text_input(
-                "🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):",
-                key="cedula_input"
-            )
+            cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
             submitted = st.form_submit_button("➡️ Continuar")
-
-            # Validación obligatoria antes de procesar
             if submitted and not cedula.strip():
                 st.warning("⚠️ Por favor ingresa tu número de cédula antes de continuar.")
                 st.stop()
@@ -227,7 +128,6 @@ if st.session_state["start_chat"]:
             st.stop()
 
         cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
-
         if cliente.empty:
             st.warning("⚠️ No encontramos información para ese documento.")
             st.stop()
@@ -255,12 +155,8 @@ if st.session_state.get("cedula_validada", False):
         "MORA_ACTUAL":"Mora (días)",
         "ESTRATEGIA_ACTUAL":"Alternativa"
     })
-
     obligaciones_vista["Alternativa"] = obligaciones_vista["Alternativa"].apply(estrategia_base_label)
-    obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(
-        obligaciones_vista["Pago mínimo mes ($)"], errors="coerce"
-    ).fillna(0).map("${:,.0f}".format)
-
+    obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(obligaciones_vista["Pago mínimo mes ($)"], errors="coerce").fillna(0).map("${:,.0f}".format)
     st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -280,30 +176,30 @@ if st.session_state.get("cedula_validada", False):
     pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
     color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-    # ... (mensaje de alternativa disponible)
-    # 🔽 Aquí viene tu bloque de cuotas:
-    if seleccion:
-        # ... (mensaje de alternativa disponible)
-# 🔽 Aquí viene tu bloque de cuotas:
-if seleccion:
-    # ============= DESPLEGABLE Y CONFIRMACIÓN ============
+    # ============================
+    # 💡 MENSAJE DE ALTERNATIVA DISPONIBLE
+    # ============================
+    st.markdown(f"""
+    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
+    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
+        <div style='font-size:1.1em; color:{color}; font-weight:700;'>💡 Alternativa disponible</div>
+        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
+            {nombre}, Banco Serfinanza te ofrece una alternativa sobre tu {producto} terminada en {cuenta}.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ============================
+    # 📆 SELECCIÓN DE CUOTAS
+    # ============================
     cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
     seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
     # ============================
-    # ✅ OPCIONES DE NEGOCIACIÓN
+    # ✅ NEGOCIACIÓN O CHAT
     # ============================
     if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
-        confirmaciones = {
-            "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-            "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-            "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
-            "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
-            "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
-            "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
-        }
-
-        confirm = confirmaciones.get(estrategia, "")
+        confirm = f"Tu solicitud de negociación a {seleccion_cuota} fue registrada exitosamente. Consulta términos en la web de Banco Serfinanza."
         st.markdown(f"""
         <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
         box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
@@ -312,9 +208,7 @@ if seleccion:
         </div>
         """, unsafe_allow_html=True)
 
-        # ============================
-        # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA (SOLO DESPUÉS DE NEGOCIAR)
-        # ============================
+        # 🧭 Otras obligaciones
         cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
         if len(cliente_en_mora) >= 2:
             st.markdown(f"""
@@ -330,12 +224,9 @@ if seleccion:
 
     elif seleccion_cuota == "No estoy interesado":
         # ============================
-        # 💬 CHAT IA DE PERSUASIÓN (GPT-4O-MINI)
+        # 💬 CHAT IA DE PERSUASIÓN
         # ============================
-        import openai
-        from openai import OpenAI
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
         <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
@@ -348,45 +239,26 @@ if seleccion:
         </div>
         """, unsafe_allow_html=True)
 
-        # Inicializa historial del chat
         if "chat_history" not in st.session_state:
             st.session_state["chat_history"] = []
 
-        # Mostrar historial previo
         for msg in st.session_state["chat_history"]:
             if msg["role"] == "user":
-                st.markdown(f"""
-                <div style='text-align:right; margin-top:10px;'>
-                    <div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>
-                        {msg["content"]}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:right; margin-top:10px;'><div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"""
-                <div style='text-align:left; margin-top:10px;'>
-                    <div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C;
-                                padding:10px 14px; border-radius:15px; max-width:80%;'>
-                        {msg["content"]}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:left; margin-top:10px;'><div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
 
-        # Campo de entrada del chat
         user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
 
         if user_msg:
             st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-
-            # Genera respuesta IA con gpt-4o-mini
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
+                    {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
                     *st.session_state["chat_history"]
                 ]
             )
-
             ai_reply = response.choices[0].message.content
             st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
             st.rerun()
