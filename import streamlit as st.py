@@ -2,40 +2,100 @@ import streamlit as st
 import pandas as pd
 
 # ============================
-# ⚙️ Configuración inicial
+# ⚙️ CONFIGURACIÓN INICIAL
 # ============================
-st.set_page_config(page_title="🤖 Chatbot IA - Serfinanza", layout="centered")
+st.set_page_config(page_title="💬 Chatbot IA - Banco Serfinanza", layout="wide")
 
-# Logo (está en la raíz del repo)
-st.image("logo_contacto.png", width=220)
-
-st.title("💬 Hola, soy Andrés")
-st.caption("Asistente Virtual IA de Contacto Solutions — aliado estratégico de Banco Serfinanza")
-
+# ============================
+# 🎨 ESTILOS PERSONALIZADOS
+# ============================
 st.markdown("""
-Bienvenido 👋  
-Soy tu asistente virtual diseñado para brindarte información actualizada sobre tus productos y opciones de negociación.  
-Por favor, digita tu número de cédula **sin puntos ni caracteres especiales** para iniciar tu consulta.
-""")
+<style>
+/* Fondo general */
+body {
+    background-color: #FFFFFF;
+}
+
+/* Cabecera con dos logos */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+/* Títulos */
+h1, h2, h3 {
+    color: #1B168C; /* Azul corporativo Serfinanza */
+    text-align: center;
+}
+
+/* Botón principal */
+div.stButton > button:first-child {
+    background-color: #1B168C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6em 1.2em;
+    font-weight: 600;
+    transition: 0.3s;
+}
+div.stButton > button:first-child:hover {
+    background-color: #F43B63; /* Rojo Ser */
+    color: white;
+}
+
+/* Mensajes */
+.caption-text {
+    text-align: center;
+    color: #333333;
+    font-size: 1.1em;
+    margin-top: 1em;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ============================
-# 📄 Cargar base de datos
+# 🖼️ CABECERA CON LOGOS
 # ============================
-try:
-    data = pd.read_excel("base_bot_serfinanza.xls")  # Base en la raíz del repo
-except Exception as e:
-    st.error(f"Error al cargar la base: {e}")
-    st.stop()
+st.markdown("""
+<div class="header-container">
+    <img src="https://raw.githubusercontent.com/andrescruz7777-arch/CHATBOT-SERFINANZA/main/logo_contacto.png" width="160">
+    <img src="https://raw.githubusercontent.com/andrescruz7777-arch/CHATBOT-SERFINANZA/main/logo_serfinanza.png" width="180">
+</div>
+""", unsafe_allow_html=True)
 
 # ============================
-# 🧭 Flujo principal
+# 💬 MENSAJE DE BIENVENIDA
+# ============================
+st.markdown("<h1>💬 Hola, soy Andrés</h1>", unsafe_allow_html=True)
+st.markdown("""
+<div class="caption-text">
+Soy tu Asistente Virtual IA de <b>Contacto Solutions</b>, aliado estratégico de <b>Banco Serfinanza</b>.  
+Estoy aquí para brindarte información de tus productos y opciones de negociación.  
+</div>
+""", unsafe_allow_html=True)
+
+# ============================
+# 🚀 BOTÓN PARA INICIAR
 # ============================
 if st.button("🚀 INICIAR CHATBOT"):
     st.session_state["start_chat"] = True
-    st.session_state["intentos"] = 0  # Contador de intentos
+    st.session_state["intentos"] = 0
 
+# ============================
+# 🧭 VALIDACIÓN DE CÉDULA
+# ============================
 if st.session_state.get("start_chat"):
-    cedula = st.text_input("🪪 Ingresa tu número de cédula:")
+    st.markdown("<br>", unsafe_allow_html=True)
+    cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):")
+
+    # Intentar cargar la base
+    try:
+        data = pd.read_excel("base_bot_serfinanza.xls")
+    except Exception as e:
+        st.error(f"Error al cargar la base: {e}")
+        st.stop()
 
     if cedula:
         st.session_state["intentos"] += 1
@@ -44,17 +104,16 @@ if st.session_state.get("start_chat"):
         if not cliente.empty:
             st.success(f"✅ Perfecto, encontramos información asociada al documento {cedula}.")
             st.markdown("En los próximos pasos podrás visualizar tus obligaciones y opciones de negociación.")
-            # Aquí luego irá el paso de mostrar obligaciones y estrategias.
         else:
             if st.session_state["intentos"] == 1:
                 st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
                            "Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
             elif st.session_state["intentos"] >= 2:
-                st.error("❌ El número ingresado no se encuentra registrado. "
-                         "Te invitamos a comunicarte con nuestros asesores para validar tu información:")
+                st.error("❌ El número ingresado no se encuentra registrado.")
                 st.markdown("""
-                📞 **601 390 6300** opción 2  
-                💼 **Contacto Solutions S.A.S.**  
-                💬 [Escríbenos por WhatsApp](https://wa.me/573112878102?text=Hola%2C+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza+Andres+el+mejor)
-                """)
+                Te invitamos a comunicarte con nuestros asesores para validar tu información:  
+                📞 <b>601 7491928</b> 
+                💼 <b>Contacto Solutions S.A.S.</b>  
+                💬 <a href="https://wa.me/573112878102?text=Hola%2C+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza" target="_blank">Escríbenos por WhatsApp</a>
+                """, unsafe_allow_html=True)
                 st.stop()
