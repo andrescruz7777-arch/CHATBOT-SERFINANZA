@@ -63,7 +63,7 @@ h1, h2, h3 {
 div.stButton > button, 
 form button[kind="primary"] {
     background-color:#1B168C !important;
-    color:#FFFFFF !important;
+    color:#FFFFFF !important;           /* 🔹 Texto blanco */
     border:none;
     border-radius:12px !important;
     padding:16px 60px !important;
@@ -76,7 +76,7 @@ form button[kind="primary"] {
 div.stButton > button:hover, 
 form button[kind="primary"]:hover {
     background-color:#F43B63 !important;
-    color:#FFFFFF !important;
+    color:#FFFFFF !important;           /* 🔹 Texto blanco al pasar el mouse */
     box-shadow:0 0 20px rgba(244,59,99,.7) !important;
     transform:scale(1.05);
 }
@@ -86,7 +86,7 @@ form button[kind="primary"]:hover {
 =========================== */
 label, 
 .stTextInput label {
-    color: #1B168C !important;  /* 🔹 Azul institucional para el texto del label */
+    color: #1B168C !important;  /* 🔹 Azul institucional */
     font-weight: 700 !important;
 }
 
@@ -97,18 +97,17 @@ label,
 }
 
 .stTextInput > div > div > input {
-    background-color: transparent !important; /* 🔹 Deja ver el azul del contenedor */
-    color: #FFFFFF !important;                /* 🔹 Texto blanco */
+    background-color: transparent !important;
+    color: #FFFFFF !important;            /* 🔹 Texto blanco */
     font-weight: 600 !important;
     border: none !important;
     box-shadow: none !important;
 }
 
 .stTextInput input::placeholder {
-    color: #E5E7EB !important; /* 🔹 Placeholder gris claro */
+    color: #E5E7EB !important;
     opacity: 1 !important;
 }
-
 
 /* ===========================
    📊 TABLA
@@ -138,6 +137,16 @@ tr:hover{
     background:#F43B63; 
     color:#FFFFFF; 
     transition:.2s; 
+}
+
+/* ===========================
+   ⚠️ MENSAJES (INFO / WARNING / ERROR)
+=========================== */
+[data-baseweb="toast"] div, 
+div[data-testid="stNotification"] p, 
+div[data-testid="stNotification"] span {
+    color: #000000 !important;     /* 🔹 Texto negro */
+    font-weight: 600 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -193,8 +202,16 @@ if st.session_state["start_chat"]:
     c1, c2, c3 = st.columns([1, 1.6, 1])
     with c2:
         with st.form("form_cedula", clear_on_submit=False):
-            cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
+            cedula = st.text_input(
+                "🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):",
+                key="cedula_input"
+            )
             submitted = st.form_submit_button("➡️ Continuar")
+
+            # Validación obligatoria antes de procesar
+            if submitted and not cedula.strip():
+                st.warning("⚠️ Por favor ingresa tu número de cédula antes de continuar.")
+                st.stop()
 
     if submitted and cedula:
         try:
@@ -204,13 +221,13 @@ if st.session_state["start_chat"]:
             st.stop()
 
         cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
+
         if cliente.empty:
             st.warning("⚠️ No encontramos información para ese documento.")
             st.stop()
         else:
             st.session_state["cedula_validada"] = True
             st.session_state["cliente_data"] = cliente
-
 # ============================
 # 🧭 DETALLE DE OBLIGACIONES
 # ============================
