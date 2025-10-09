@@ -156,30 +156,6 @@ tr:hover{
 </style>
 """, unsafe_allow_html=True)
 /* ===========================
-   🟦 BOTONES
-=========================== */
-div.stButton > button, 
-form button[kind="primary"] {
-    background-color:#1B168C !important;
-    color:#FFFFFF !important;           /* 🔹 Texto blanco */
-    border:none;
-    border-radius:12px !important;
-    padding:16px 60px !important;
-    font-size:1.1em !important;
-    font-weight:600 !important;
-    cursor:pointer;
-    transition:all .3s ease !important;
-    box-shadow:0 4px 15px rgba(27,22,140,.3) !important;
-}
-div.stButton > button:hover, 
-form button[kind="primary"]:hover {
-    background-color:#F43B63 !important;
-    color:#FFFFFF !important;           /* 🔹 Texto blanco al pasar el mouse */
-    box-shadow:0 0 20px rgba(244,59,99,.7) !important;
-    transform:scale(1.05);
-}
-
-/* ===========================
    🪪 CAMPOS DE TEXTO (CÉDULA)
 =========================== */
 label, 
