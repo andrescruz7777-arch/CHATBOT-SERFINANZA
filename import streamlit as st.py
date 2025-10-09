@@ -14,28 +14,30 @@ if "cliente" not in st.session_state:
     st.session_state["cliente"] = None
 
 # ============================
-# 🎨 ESTILOS CORPORATIVOS (forzados modo claro)
+# 🎨 ESTILOS CORPORATIVOS Y ANIMACIÓN
 # ============================
 st.markdown("""
 <style>
-/* Fondo blanco total */
+/* Fondo blanco global */
 html, body, [class*="stAppViewContainer"], [class*="stMainBlockContainer"], .stApp {
     background-color: #FFFFFF !important;
     color: #1B168C !important;
 }
 
-/* Texto general */
+/* Tipografía general */
 *, p, span, div, label {
     color: #1B168C !important;
+    font-family: 'Segoe UI', sans-serif !important;
 }
 
 /* Encabezados */
 h1, h2, h3 {
     color: #1B168C !important;
     text-align: center !important;
+    font-weight: 700 !important;
 }
 
-/* Cabecera logos */
+/* Contenedor logos */
 .header-container {
     display: flex;
     justify-content: space-between;
@@ -43,7 +45,7 @@ h1, h2, h3 {
     padding: 0 2rem;
 }
 
-/* Introducción */
+/* Texto bienvenida */
 .intro-text {
     text-align: center;
     font-size: 1.15em;
@@ -53,24 +55,55 @@ h1, h2, h3 {
 }
 .highlight { color: #F43B63 !important; font-weight: 600; }
 
-/* Botón principal */
+/* === BOTÓN PRINCIPAL === */
 div.stButton > button {
     background-color: #1B168C !important;
-    color: #fff !important;
+    color: white !important;
     border: none !important;
-    border-radius: 12px !important;
-    padding: 16px 60px !important;
+    border-radius: 18px !important;
+    padding: 16px 70px !important;
     font-size: 1.1em !important;
     font-weight: 600 !important;
-    box-shadow: 0 4px 15px rgba(27,22,140,.3) !important;
+    box-shadow: 0 6px 18px rgba(27,22,140,0.3) !important;
+    transition: all 0.3s ease !important;
+    animation: bounce 3s infinite ease-in-out;
 }
 div.stButton > button:hover {
     background-color: #F43B63 !important;
-    box-shadow: 0 0 20px rgba(244,59,99,.6) !important;
+    box-shadow: 0 0 25px rgba(244,59,99,0.6) !important;
     transform: scale(1.05);
 }
 
-/* Tabla */
+/* Animación rebote */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+/* Botón de formularios */
+form button {
+    background-color: #1B168C !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(27,22,140,.3) !important;
+}
+form button:hover {
+    background-color: #F43B63 !important;
+}
+
+/* === CAMPOS === */
+input[type="text"], [data-baseweb="select"] div {
+    background-color: white !important;
+    color: #1B168C !important;
+    border: 2px solid #1B168C !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+}
+
+/* === TABLA === */
 .tabla-ob table {
     width: 100%;
     border-collapse: collapse;
@@ -97,7 +130,7 @@ div.stButton > button:hover {
     transition: .2s;
 }
 
-/* Tarjetas */
+/* === TARJETAS === */
 .alternativa {
     padding: 20px;
     background: #FFFFFF;
@@ -213,6 +246,7 @@ if st.session_state["cliente"] is not None:
         "ESTRATEGIA_ACTUAL":"Alternativa"
     })
     vista["Alternativa"] = vista["Alternativa"].apply(map_alternativa)
+    vista["Pago mínimo ($)"] = pd.to_numeric(vista["Pago mínimo ($)"], errors="coerce").fillna(0).map(lambda x: f"$ {x:,.0f}")
     st.markdown(f"<div class='tabla-ob'>{vista.to_html(index=False)}</div>", unsafe_allow_html=True)
 
     # Selección
@@ -229,46 +263,25 @@ if st.session_state["cliente"] is not None:
     pago_min = f"${obligacion.get('PAGO_MINIMO_MES',0):,.0f}"
     color = "#F43B63" if "CON PAGO" in estrategia else "#1B168C"
 
-    # Mensajes
-    mensajes = {
-        "REDIFERIDO CON PAGO": f"{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-        "REDIFERIDO SIN PAGO": f"{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Responde con la letra respectiva: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-        "REESTRUCTURACION CON PAGO": f"{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-        "REESTRUCTURACION SIN PAGO": f"{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Responde con la letra respectiva: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-        "PRORROGA SIN PAGO": f"{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_min} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Responde: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.",
-        "PRORROGA CON PAGO": f"{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_min} de tu {producto} terminada en {cuenta} con una tasa del {tasa}, los intereses y otros conceptos serán diferidos a 12 meses al 0%. Realiza un abono de {abono} y responde: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."
-    }
-
     st.markdown(
         f"<div class='alternativa' style='--color:{color}'>"
         f"<div style='font-weight:700;color:{color};font-size:1.05em'>💡 Alternativa disponible</div>"
-        f"<div style='margin-top:10px;font-size:1em;color:#333'>{mensajes.get(estrategia,'No hay alternativa disponible.')}</div>"
+        f"<div style='margin-top:10px;font-size:1em;color:#333'>{nombre}, Banco Serfinanza te invita a la alternativa {map_alternativa(estrategia)} de tu {producto} terminada en {cuenta}. Selecciona tu opción de plazo.</div>"
         f"</div>",
         unsafe_allow_html=True
     )
 
-    # Cuotas
     cuotas = ["Selecciona una opción...", "A: 12 cuotas", "B: 24 cuotas", "C: 36 cuotas"]
     if "PRORROGA" not in estrategia:
         cuotas += ["D: 48 cuotas", "E: 60 cuotas", "F: No estoy interesado"]
     seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0)
 
-    # ============================
-    # ✅ CONFIRMACIÓN
-    # ============================
     if seleccion_cuota != "Selecciona una opción..." and seleccion_cuota != "F: No estoy interesado":
         _, cuota_txt = seleccion_cuota.split(":")
         cuota_txt = cuota_txt.strip()
-        confirmacion = f"Tu solicitud de {map_alternativa(estrategia).lower()} a {cuota_txt} ha sido registrada exitosamente. La tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza."
-        
-        st.markdown(
-            f"<div class='confirmacion' style='--color:{color}'>"
-            f"<b>✅ Confirmación registrada:</b><br>{confirmacion}"
-            f"</div>",
-            unsafe_allow_html=True
-        )
+        confirmacion = f"Tu solicitud de {map_alternativa(estrategia).lower()} a {cuota_txt} ha sido registrada exitosamente. La tasa será del {tasa}."
+        st.markdown(f"<div class='confirmacion' style='--color:{color}'><b>✅ Confirmación registrada:</b><br>{confirmacion}</div>", unsafe_allow_html=True)
 
-        # Guardar confirmación en Excel
         registro = pd.DataFrame([{
             "Fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "Cédula": cliente["NUMERO_IDENTIFICACION"].iloc[0],
@@ -279,7 +292,6 @@ if st.session_state["cliente"] is not None:
             "Cuota seleccionada": cuota_txt,
             "Confirmación": confirmacion
         }])
-
         path = "confirmaciones_chatbot.xlsx"
         if os.path.exists(path):
             prev = pd.read_excel(path)
