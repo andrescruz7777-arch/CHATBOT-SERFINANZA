@@ -139,8 +139,6 @@ with st.container():
 if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
-
-
 # ============================
 # 🧭 VALIDACIÓN DE CÉDULA
 # ============================
