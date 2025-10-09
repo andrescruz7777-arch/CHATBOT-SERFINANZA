@@ -6,19 +6,20 @@ import pandas as pd
 # ============================
 st.set_page_config(page_title="💬 Chatbot IA - Banco Serfinanza", layout="centered")
 
-if "start_chat" not in st.session_state:
-    st.session_state["start_chat"] = False
-if "intentos" not in st.session_state:
-    st.session_state["intentos"] = 0
-if "cuota_elegida" not in st.session_state:
-    st.session_state["cuota_elegida"] = None
+# Variables de control
+for key in ["start_chat", "intentos", "cuota_elegida"]:
+    if key not in st.session_state:
+        st.session_state[key] = False if key == "start_chat" else 0 if key == "intentos" else None
 
 # ============================
 # 🎨 ESTILOS PERSONALIZADOS
 # ============================
 st.markdown("""
 <style>
-body { background-color: #FFFFFF !important; }
+html, body, [class*="css"] {
+    background-color: #FFFFFF !important;
+    color: #1B168C !important;
+}
 
 /* CABECERA */
 .header-container {
@@ -26,7 +27,7 @@ body { background-color: #FFFFFF !important; }
 }
 
 /* TITULOS */
-h1, h2, h3 { color: #1B168C; text-align: center; }
+h1, h2, h3 { color: #1B168C !important; text-align: center; }
 
 /* TEXTO DE BIENVENIDA */
 .intro-text {
@@ -35,11 +36,11 @@ h1, h2, h3 { color: #1B168C; text-align: center; }
     font-weight: 500;
     line-height: 1.6em;
     margin-top: 15px;
-    color: #1B168C;
+    color: #1B168C !important;
 }
 .highlight { color: #F43B63; font-weight: 600; }
 
-/* BOTONES CON TEXTO BLANCO */
+/* BOTONES BLANCOS */
 div.stButton > button, form button[kind="primary"] {
     background-color:#1B168C !important;
     color:#FFFFFF !important;
@@ -184,10 +185,11 @@ if st.session_state.get("start_chat"):
                 tasa = obligacion_sel.get("TASA", "según condiciones vigentes")
                 abono = f"${obligacion_sel.get('VALOR_ABONO', 0):,.0f}"
                 pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
-
                 color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-                # ---- MENSAJE DE OFRECIMIENTO ----
+                # ------------------------
+                # MENSAJE DE OFRECIMIENTO
+                # ------------------------
                 mensajes = {
                     "REDIFERIDO CON PAGO": f"""{nombre} Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, no incluye intereses y otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo} con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa, respondiendo con la letra respectiva acorde con el número de cuotas que deseas:
                     A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.""",
@@ -212,19 +214,21 @@ if st.session_state.get("start_chat"):
                 </div>
                 """, unsafe_allow_html=True)
 
+                # ------------------------
+                # DESPLEGABLE Y CONFIRMACIÓN
+                # ------------------------
                 cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, index=0, key="cuota_elegida")
+                seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, index=0, key="cuota_tmp")
 
-                # ---- CONFIRMACIÓN AUTOMÁTICA ----
                 if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
                     st.session_state["cuota_elegida"] = seleccion_cuota
                     confirmaciones = {
                         "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
                         "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio. La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza.",
-                        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}, consulta términos y condiciones en la página web del Banco Serfinanza."
+                        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
+                        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
+                        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
+                        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
                     }
 
                     confirm = confirmaciones.get(estrategia, "")
