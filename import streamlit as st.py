@@ -245,8 +245,3 @@ if st.session_state.get("start_chat"):
                     """, unsafe_allow_html=True)
                 elif seleccion_cuota == "No estoy interesado":
                     st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
-        registro.to_excel(path, index=False)
-        st.success("💾 Registro guardado exitosamente en confirmaciones_chatbot.xlsx")
-
-    elif seleccion_cuota == "F: No estoy interesado":
-        st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
