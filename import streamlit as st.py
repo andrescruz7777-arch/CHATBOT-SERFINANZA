@@ -139,16 +139,23 @@ if st.session_state.get("start_chat"):
 
             st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
 
-            # —— SELECTOR DE OBLIGACIÓN ——
+           # —— SELECTOR DE OBLIGACIÓN ——
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
 
             opciones = [f"{row['Producto']} ({row['Últimos dígitos']})" for _, row in obligaciones_vista.iterrows()]
-            seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
 
-            if seleccion:
-                st.session_state["obligacion_seleccionada"] = seleccion
-                st.info(f"✅ Has seleccionado {seleccion}. A continuación se mostrarán las opciones de negociación disponibles.")
+            # Guardamos la selección directamente en session_state (sin volver a asignarla)
+            seleccion = st.selectbox(
+            "Selecciona una opción:",
+            opciones,
+            key="obligacion_seleccionada"
+)
+
+if st.session_state.get("obligacion_seleccionada"):
+    st.info(f"✅ Has seleccionado {st.session_state['obligacion_seleccionada']}. "
+            "A continuación se mostrarán las opciones de negociación disponibles.")
+
 
         else:
             # —— CÉDULA NO ENCONTRADA ——
