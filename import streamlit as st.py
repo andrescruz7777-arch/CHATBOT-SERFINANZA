@@ -2,11 +2,13 @@ import streamlit as st
 import pandas as pd
 
 # ============================
-# Configuración inicial
+# ⚙️ Configuración inicial
 # ============================
 st.set_page_config(page_title="🤖 Chatbot IA - Serfinanza", layout="centered")
 
-st.image("imagenes/logo_contacto.png", width=220)  # Puedes cambiar por el logo que envíes
+# Logo (está en la raíz del repo)
+st.image("logo_contacto.png", width=220)
+
 st.title("💬 Hola, soy Andrés")
 st.caption("Asistente Virtual IA de Contacto Solutions — aliado estratégico de Banco Serfinanza")
 
@@ -17,16 +19,16 @@ Por favor, digita tu número de cédula **sin puntos ni caracteres especiales** 
 """)
 
 # ============================
-# Cargar base de datos
+# 📄 Cargar base de datos
 # ============================
 try:
-    data = pd.read_excel("data/base_bot_serfinanza.xls")
+    data = pd.read_excel("base_bot_serfinanza.xls")  # Base en la raíz del repo
 except Exception as e:
     st.error(f"Error al cargar la base: {e}")
     st.stop()
 
 # ============================
-# Flujo principal
+# 🧭 Flujo principal
 # ============================
 if st.button("🚀 INICIAR CHATBOT"):
     st.session_state["start_chat"] = True
@@ -41,7 +43,8 @@ if st.session_state.get("start_chat"):
 
         if not cliente.empty:
             st.success(f"✅ Perfecto, encontramos información asociada al documento {cedula}.")
-            # Aquí se pasa al siguiente paso: mostrar obligaciones, estrategias, etc.
+            st.markdown("En los próximos pasos podrás visualizar tus obligaciones y opciones de negociación.")
+            # Aquí luego irá el paso de mostrar obligaciones y estrategias.
         else:
             if st.session_state["intentos"] == 1:
                 st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
@@ -51,6 +54,7 @@ if st.session_state.get("start_chat"):
                          "Te invitamos a comunicarte con nuestros asesores para validar tu información:")
                 st.markdown("""
                 📞 **601 390 6300** opción 2  
-                💼 **Contacto Solutions S.A.S.**
+                💼 **Contacto Solutions S.A.S.**  
+                💬 [Escríbenos por WhatsApp](https://wa.me/573112878102?text=Hola%2C+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza+Andres+el+mejor)
                 """)
                 st.stop()
