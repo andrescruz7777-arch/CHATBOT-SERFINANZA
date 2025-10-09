@@ -172,8 +172,62 @@ if st.session_state.get("start_chat"):
             seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
 
             if st.session_state.get("obligacion_seleccionada"):
-                st.info(f"✅ Has seleccionado {st.session_state['obligacion_seleccionada']}. "
-                        "A continuación se mostrarán las opciones de negociación disponibles.")
+                seleccion_texto = st.session_state["obligacion_seleccionada"]
+                obligacion_sel = obligaciones_cliente.iloc[opciones.index(seleccion_texto)]
+                
+                estrategia = obligacion_sel["ESTRATEGIA_ACTUAL"].strip().upper()
+                nombre = str(obligacion_sel["NOMBRE_FINAL"]).title()
+                producto = obligacion_sel["TIPO_PRODUCTO"]
+                cuenta = obligacion_sel["ULTIMOS_CUENTA"] 
+                saldo = f"${obligacion_sel['ULTIMO_SALDO_CAPITAL']:,.0f}" if "ULTIMO_SALDO_CAPITAL" in obligacion_sel else ""
+                tasa = obligacion_sel.get("TASA", "según condiciones vigentes")
+                abono = f"${obligacion_sel['VALOR_ABONO']:,.0f}" if "VALOR_ABONO" in obligacion_sel else ""
+                pago_minimo = f"${obligacion_sel['PAGO_MINIMO_MES']:,.0f}"
+
+# Selección de mensaje según estrategia
+        if estrategia == "REDIFERIDO CON PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
+        no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
+        con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
+    elif estrategia == "REDIFERIDO SIN PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
+        no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
+        con una tasa del {tasa}."""
+    elif estrategia == "REESTRUCTURACION CON PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
+        no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
+        con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
+    elif estrategia == "REESTRUCTURACION SIN PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
+        no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
+        con una tasa del {tasa}."""
+    elif estrategia == "PRORROGA SIN PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
+        de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
+        Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
+    elif estrategia == "PRORROGA CON PAGO":
+        mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
+        de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
+        Realiza un abono de {abono} para aplicar la alternativa. Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
+    else:
+        mensaje = f"{nombre}, tu obligación no cuenta con una alternativa activa de negociación en este momento."
+
+    st.markdown(f"""
+    <div style='padding:15px; background-color:#F9FAFB; border-radius:10px; border:1px solid #E5E7EB;'>
+        <b>💡 Alternativa disponible:</b><br><br>{mensaje}<br><br>
+        Responde con la letra correspondiente a la cantidad de cuotas que deseas:
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Desplegable de cuotas
+    cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
+    seleccion_cuota = st.selectbox("📆 Selecciona una opción de plazo:", cuotas, key="cuota_elegida")
+
+    if seleccion_cuota and seleccion_cuota != "No estoy interesado":
+        st.success(f"✅ Has seleccionado {seleccion_cuota}. ¡Excelente elección!")
+    elif seleccion_cuota == "No estoy interesado":
+        st.warning("ℹ️ Entendido, no estás interesado en esta alternativa por ahora.")
+
 
         else:
             # —— CÉDULA NO ENCONTRADA ——
