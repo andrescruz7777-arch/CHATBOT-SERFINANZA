@@ -150,7 +150,7 @@ if st.session_state.get("start_chat"):
                 "TIPO_PRODUCTO":"Producto",
                 "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
                 "MORA_ACTUAL":"Mora (días)",
-                "ESTRATEGIA_ACTUAL":"Alternativa"
+                "ESTRATEGIA_ACTUAL":"Estrategia"
             })
 
             # Mapear estrategia a etiqueta corta
