@@ -175,36 +175,36 @@ if st.session_state.get("start_chat"):
                     color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
-                    con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
+                    con una tasa del {tasa}M.V. Realiza un abono de {abono} para aplicar la alternativa."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REDIFERIDO SIN PAGO":
                     color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
-                    con una tasa del {tasa}."""
+                    con una tasa del {tasa}M.V."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REESTRUCTURACION CON PAGO":
                     color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
-                    con una tasa del {tasa}. Realiza un abono de {abono} para aplicar la alternativa."""
+                    con una tasa del {tasa}M.V. Realiza un abono de {abono} para aplicar la alternativa."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "REESTRUCTURACION SIN PAGO":
                     color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital,
                     no incluye intereses ni otros conceptos de tu {producto} terminada en {cuenta} por valor de {saldo}
-                    con una tasa del {tasa}."""
+                    con una tasa del {tasa}M.V."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
                 elif estrategia == "PRORROGA SIN PAGO":
                     color = "#1B168C"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
-                    de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
+                    de tu {producto} terminada en {cuenta} con una tasa del {tasa}M.V.
                     Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "No estoy interesado"]
                 elif estrategia == "PRORROGA CON PAGO":
                     color = "#F43B63"
                     mensaje = f"""{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de {pago_minimo}
-                    de tu {producto} terminada en {cuenta} con una tasa del {tasa}.
+                    de tu {producto} terminada en {cuenta} con una tasa del {tasa}M.V.
                     Realiza un abono de {abono} para aplicar la alternativa. Los intereses y otros conceptos serán diferidos a 12 meses al 0%."""
                     cuotas = ["12 cuotas", "24 cuotas", "36 cuotas", "No estoy interesado"]
                 else:
