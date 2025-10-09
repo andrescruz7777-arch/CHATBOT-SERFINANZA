@@ -283,108 +283,110 @@ if st.session_state.get("cedula_validada", False):
     # ... (mensaje de alternativa disponible)
     # 🔽 Aquí viene tu bloque de cuotas:
     if seleccion:
-        # ============= DESPLEGABLE Y CONFIRMACIÓN ============
-        cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-        seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
-
-        # 🔽 Pega aquí TODO tu bloque de negociación, confirmaciones, más obligaciones y chat IA
-# ============================
-# ✅ OPCIONES DE NEGOCIACIÓN
-# ============================
-if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
-    confirmaciones = {
-        "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-        "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
-        "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
-        "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
-        "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
-        "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
-    }
-
-    confirm = confirmaciones.get(estrategia, "")
-    st.markdown(f"""
-    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
-    box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-        <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
-        <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
-    </div>
-    """, unsafe_allow_html=True)
+        # ... (mensaje de alternativa disponible)
+# 🔽 Aquí viene tu bloque de cuotas:
+if seleccion:
+    # ============= DESPLEGABLE Y CONFIRMACIÓN ============
+    cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
+    seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
     # ============================
-    # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA (SOLO DESPUÉS DE NEGOCIAR)
+    # ✅ OPCIONES DE NEGOCIACIÓN
     # ============================
-    cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
-    if len(cliente_en_mora) >= 2:
+    if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
+        confirmaciones = {
+            "REDIFERIDO CON PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa} y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+            "REDIFERIDO SIN PAGO": f"Tu solicitud de la ampliación de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}. Consulta términos y condiciones en la página web del Banco Serfinanza.",
+            "REESTRUCTURACION CON PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo.",
+            "REESTRUCTURACION SIN PAGO": f"Tu solicitud de reestructuración de plazo al saldo capital a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio.",
+            "PRORROGA SIN PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente, la tasa será del {tasa}.",
+            "PRORROGA CON PAGO": f"Tu solicitud de diferido del capital de tu pago mínimo a {seleccion_cuota} en tu {producto} terminada en {cuenta} ha sido registrada exitosamente siempre y cuando se realice el abono acordado, la tasa será del {tasa}."
+        }
+
+        confirm = confirmaciones.get(estrategia, "")
         st.markdown(f"""
+        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
+        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
+            <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
+            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ============================
+        # 🧭 SI TIENE MÁS OBLIGACIONES EN MORA (SOLO DESPUÉS DE NEGOCIAR)
+        # ============================
+        cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
+        if len(cliente_en_mora) >= 2:
+            st.markdown(f"""
+            <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
+            box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:15px;'>
+                <div style='font-size:1.1em; color:#1B168C; font-weight:700;'>📌 Tienes más obligaciones en mora</div>
+                <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
+                    Excelente, hemos registrado tu negociación.<br>
+                    Ahora continuemos con tu otra obligación que presenta mora, para ayudarte a normalizar completamente tu estado con el <b>Banco Serfinanza</b>.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    elif seleccion_cuota == "No estoy interesado":
+        # ============================
+        # 💬 CHAT IA DE PERSUASIÓN (GPT-4O-MINI)
+        # ============================
+        import openai
+        from openai import OpenAI
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
         <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
-        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:15px;'>
-            <div style='font-size:1.1em; color:#1B168C; font-weight:700;'>📌 Tienes más obligaciones en mora</div>
-            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
-                Excelente, hemos registrado tu negociación.<br>
-                Ahora continuemos con tu otra obligación que presenta mora, para ayudarte a normalizar completamente tu estado con el <b>Banco Serfinanza</b>.
+        box-shadow:0 4px 12px rgba(27,22,140,0.15);'>
+            <div style='font-size:1.2em; font-weight:700; color:#1B168C;'>🤖 Asesor Virtual IA – Banco Serfinanza</div>
+            <div style='margin-top:8px; font-size:1em; color:#333;'>
+                💬 Entiendo que no deseas tomar el acuerdo por ahora.<br>
+                Permíteme asesorarte para tomar la mejor decisión sobre los <b>beneficios del acuerdo o sus condiciones</b>.
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-elif seleccion_cuota == "No estoy interesado":
-    # ============================
-    # 💬 CHAT IA DE PERSUASIÓN (GPT-4O-MINI)
-    # ============================
-    import openai
-    from openai import OpenAI
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        # Inicializa historial del chat
+        if "chat_history" not in st.session_state:
+            st.session_state["chat_history"] = []
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
-    box-shadow:0 4px 12px rgba(27,22,140,0.15);'>
-        <div style='font-size:1.2em; font-weight:700; color:#1B168C;'>🤖 Asesor Virtual IA – Banco Serfinanza</div>
-        <div style='margin-top:8px; font-size:1em; color:#333;'>
-            💬 Entiendo que no deseas tomar el acuerdo por ahora.<br>
-            Permíteme asesorarte para tomar la mejor decisión sobre los <b>beneficios del acuerdo o sus condiciones</b>.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Inicializa historial del chat
-    if "chat_history" not in st.session_state:
-        st.session_state["chat_history"] = []
-
-    # Mostrar historial previo
-    for msg in st.session_state["chat_history"]:
-        if msg["role"] == "user":
-            st.markdown(f"""
-            <div style='text-align:right; margin-top:10px;'>
-                <div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>
-                    {msg["content"]}
+        # Mostrar historial previo
+        for msg in st.session_state["chat_history"]:
+            if msg["role"] == "user":
+                st.markdown(f"""
+                <div style='text-align:right; margin-top:10px;'>
+                    <div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>
+                        {msg["content"]}
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style='text-align:left; margin-top:10px;'>
-                <div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C;
-                            padding:10px 14px; border-radius:15px; max-width:80%;'>
-                    {msg["content"]}
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style='text-align:left; margin-top:10px;'>
+                    <div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C;
+                                padding:10px 14px; border-radius:15px; max-width:80%;'>
+                        {msg["content"]}
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
-    # Campo de entrada del chat
-    user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
+        # Campo de entrada del chat
+        user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
 
-    if user_msg:
-        st.session_state["chat_history"].append({"role": "user", "content": user_msg})
+        if user_msg:
+            st.session_state["chat_history"].append({"role": "user", "content": user_msg})
 
-        # Genera respuesta IA con gpt-4o-mini
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
-                *st.session_state["chat_history"]
-            ]
-        )
+            # Genera respuesta IA con gpt-4o-mini
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica con claridad los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
+                    *st.session_state["chat_history"]
+                ]
+            )
 
-        ai_reply = response.choices[0].message.content
-        st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
-        st.rerun()
+            ai_reply = response.choices[0].message.content
+            st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
+            st.rerun()
