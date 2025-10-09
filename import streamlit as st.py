@@ -349,7 +349,7 @@ if st.session_state.get("cedula_validada", False):
     # ============================
     import openai
     from openai import OpenAI
-    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
