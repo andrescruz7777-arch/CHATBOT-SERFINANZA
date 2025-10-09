@@ -91,12 +91,10 @@ Soy tu <span class="highlight">Asistente Virtual IA</span> de <b>Contacto Soluti
 Estoy aquí para brindarte información de tus productos y opciones de negociación.
 </div>
 """, unsafe_allow_html=True)
-
 # ============================
 # 🚀 BOTÓN PRINCIPAL (ALARGADO Y VISUALMENTE CENTRADO)
 # ============================
 
-# CSS del botón institucional Serfinanza
 st.markdown("""
 <style>
 div.stButton > button:first-child {
@@ -104,7 +102,7 @@ div.stButton > button:first-child {
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 16px 80px;                     /* ⬅️ más ancho y alto */
+    padding: 16px 80px;                     /* ⬅️ más ancho */
     font-size: 1.15em;
     font-weight: 600;
     cursor: pointer;
@@ -119,23 +117,12 @@ div.stButton > button:first-child:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# Usamos columnas proporcionales (centrado visual)
+# Botón con clave única
 col1, col2, col3 = st.columns([1, 2.4, 1])
 with col2:
-    start = st.button("🚀 INICIAR CHATBOT")
+    start = st.button("🚀 INICIAR CHATBOT", key="btn_iniciar_chatbot")
 
-# Estado del flujo
-if start:
-    st.session_state["start_chat"] = True
-    st.session_state["intentos"] = 0
-
-# Usamos un contenedor flex y un st.button real
-with st.container():
-    st.markdown("<div class='start-button-container'>", unsafe_allow_html=True)
-    start = st.button("🚀 INICIAR CHATBOT")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Si el usuario inicia, creamos el estado
+# Activar flujo
 if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
