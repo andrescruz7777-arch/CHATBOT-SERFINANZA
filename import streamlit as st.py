@@ -160,7 +160,7 @@ if st.session_state.get("start_chat"):
                 st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
                            "Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
             elif st.session_state["intentos"] >= 2:
-                st.error("❌ El número ingresado no se encuentra registrado.")
+                st.error("❌ El número ingresado no se encuentra registrado. Digita nuevamente tu numero de cedula sin puntos o caracteres especiales")
                 st.markdown("""
                 Te invitamos a comunicarte con nuestros asesores para validar tu información:  
                 📞 <b>601 7491928</b>  
