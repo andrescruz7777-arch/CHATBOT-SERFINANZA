@@ -127,72 +127,48 @@ if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
 # ============================
-# 🧭 VALIDACIÓN DE CÉDULA Y MOSTRAR OBLIGACIONES
+# 💳 MOSTRAR OBLIGACIONES DEL CLIENTE (sincrónico y con color)
 # ============================
-if st.session_state.get("start_chat"):
-    st.markdown("<hr><br>", unsafe_allow_html=True)
-    st.subheader("🔍 Verificación de identidad")
 
-    cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
+obligaciones_cliente = cliente.copy()
+total_obligaciones = len(obligaciones_cliente)
+nombre_cliente = obligaciones_cliente["NOMBRE_FINAL"].iloc[0].title()
 
-    # Botón adicional junto con Enter
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        siguiente = st.button("➡️ Continuar", key="continuar_btn")
+st.markdown(
+    f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones > 1 else ''}** registradas."
+)
+st.markdown("A continuación te presento el estado de cada una 👇")
 
-    # Intentar cargar la base
-    try:
-        data = pd.read_excel("base_bot_serfinanza.xls")
-    except Exception as e:
-        st.error(f"Error al cargar la base: {e}")
-        st.stop()
+# (Opcional) asegurar que PAGO_MINIMO_MES sea numérico para formatear
+obligaciones_cliente["PAGO_MINIMO_MES"] = pd.to_numeric(
+    obligaciones_cliente["PAGO_MINIMO_MES"], errors="coerce"
+).fillna(0)
 
-    # El flujo se activa si presiona Enter o clic en Continuar
-    if cedula and (siguiente or st.session_state.get("cedula_input")):
-        st.session_state["intentos"] += 1
-        cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
+# Tarjetas de obligaciones (usa itertuples con atributos y color azul Serfinanza)
+for idx, r in enumerate(obligaciones_cliente.itertuples(index=False), start=1):
+    st.markdown(f"""
+    <div style='border:1px solid #E5E7EB; border-radius:12px; padding:14px; margin-top:10px; background:#F9FAFB;'>
+      <div style='font-weight:700; color:#1B168C; margin-bottom:6px;'>💳 Obligación {idx}</div>
+      <div><b>🔹 Producto:</b> {r.TIPO_PRODUCTO}</div>
+      <div><b>🔹 Últimos dígitos:</b> {r.ULTIMOS_CUENTA}</div>
+      <div><b>🔹 Pago mínimo del mes:</b> ${r.PAGO_MINIMO_MES:,.0f}</div>
+      <div><b>🔹 Mora actual:</b> {r.MORA_ACTUAL} días</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        if not cliente.empty:
-            st.success(f"✅ Perfecto, encontramos información asociada al documento {cedula}.")
-            st.markdown("En los próximos pasos podrás visualizar tus obligaciones y opciones de negociación.")
+# Selector de obligación (ahora también con itertuples y atributos)
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
 
-            # ============================
-            # 💳 MOSTRAR OBLIGACIONES DEL CLIENTE
-            # ============================
+opciones = [
+    f"Obligación {i} — {r.TIPO_PRODUCTO} ({r.ULTIMOS_CUENTA})"
+    for i, r in enumerate(obligaciones_cliente.itertuples(index=False), start=1)
+]
+seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
 
-            obligaciones_cliente = cliente.copy()
-            total_obligaciones = len(obligaciones_cliente)
-            nombre_cliente = obligaciones_cliente["NOMBRE_FINAL"].iloc[0].title()
-
-            # Encabezado
-            st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones > 1 else ''}** registradas.")
-            st.markdown("A continuación te presento el estado de cada una 👇")
-
-            # Mostrar las obligaciones formateadas
-            for i, row in obligaciones_cliente.iterrows():
-                st.markdown(f"""
-                <div style='border:1px solid #DDD; border-radius:10px; padding:12px; margin-top:10px; background-color:#F9F9FB;'>
-                    <b>💳 Obligación {i + 1}</b><br>
-                    <b>🔹 Producto:</b> {row['TIPO_PRODUCTO']}<br>
-                    <b>🔹 Últimos dígitos:</b> {row['ULTIMOS_CUENTA']}<br>
-                    <b>🔹 Pago mínimo del mes:</b> ${row['PAGO_MINIMO_MES']:,.0f}<br>
-                    <b>🔹 Mora actual:</b> {row['MORA_ACTUAL']} días
-                </div>
-                """, unsafe_allow_html=True)
-
-            # Selector de obligación
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
-
-            opciones = [
-                f"Obligación {i+1} — {row['TIPO_PRODUCTO']} ({row['ULTIMOS_CUENTA']})"
-                for i, row in enumerate(obligaciones_cliente.itertuples())
-            ]
-            seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
-
-            if seleccion:
-                st.session_state["obligacion_seleccionada"] = seleccion
-                st.info(f"✅ Has seleccionado {seleccion}. A continuación se mostrarán las opciones de negociación disponibles.")
+if seleccion:
+    st.session_state["obligacion_seleccionada"] = seleccion
+    st.info(f"✅ Has seleccionado {seleccion}. A continuación se mostrarán las opciones de negociación disponibles.")
 
         else:
             if st.session_state["intentos"] == 1:
