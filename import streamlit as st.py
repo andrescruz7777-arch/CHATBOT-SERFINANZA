@@ -127,7 +127,7 @@ if start:
     st.session_state["start_chat"] = True
     st.session_state["intentos"] = 0
 # ============================
-# 🧭 VALIDACIÓN DE CÉDULA
+# 🧭 VALIDACIÓN DE CÉDULA Y MOSTRAR OBLIGACIONES
 # ============================
 if st.session_state.get("start_chat"):
     st.markdown("<hr><br>", unsafe_allow_html=True)
@@ -155,12 +155,51 @@ if st.session_state.get("start_chat"):
         if not cliente.empty:
             st.success(f"✅ Perfecto, encontramos información asociada al documento {cedula}.")
             st.markdown("En los próximos pasos podrás visualizar tus obligaciones y opciones de negociación.")
+
+            # ============================
+            # 💳 MOSTRAR OBLIGACIONES DEL CLIENTE
+            # ============================
+
+            obligaciones_cliente = cliente.copy()
+            total_obligaciones = len(obligaciones_cliente)
+            nombre_cliente = obligaciones_cliente["NOMBRE_FINAL"].iloc[0].title()
+
+            # Encabezado
+            st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones > 1 else ''}** registradas.")
+            st.markdown("A continuación te presento el estado de cada una 👇")
+
+            # Mostrar las obligaciones formateadas
+            for i, row in obligaciones_cliente.iterrows():
+                st.markdown(f"""
+                <div style='border:1px solid #DDD; border-radius:10px; padding:12px; margin-top:10px; background-color:#F9F9FB;'>
+                    <b>💳 Obligación {i + 1}</b><br>
+                    <b>🔹 Producto:</b> {row['TIPO_PRODUCTO']}<br>
+                    <b>🔹 Últimos dígitos:</b> {row['ULTIMOS_CUENTA']}<br>
+                    <b>🔹 Pago mínimo del mes:</b> ${row['PAGO_MINIMO_MES']:,.0f}<br>
+                    <b>🔹 Mora actual:</b> {row['MORA_ACTUAL']} días
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Selector de obligación
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
+
+            opciones = [
+                f"Obligación {i+1} — {row['TIPO_PRODUCTO']} ({row['ULTIMOS_CUENTA']})"
+                for i, row in enumerate(obligaciones_cliente.itertuples())
+            ]
+            seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
+
+            if seleccion:
+                st.session_state["obligacion_seleccionada"] = seleccion
+                st.info(f"✅ Has seleccionado {seleccion}. A continuación se mostrarán las opciones de negociación disponibles.")
+
         else:
             if st.session_state["intentos"] == 1:
                 st.warning("⚠️ No encontramos el número ingresado en nuestra base de datos. "
                            "Por favor verifica y vuelve a digitarlo sin espacios ni caracteres especiales.")
             elif st.session_state["intentos"] >= 2:
-                st.error("❌ El número ingresado no se encuentra registrado. Digita nuevamente tu numero de cedula sin puntos o caracteres especiales")
+                st.error("❌ El número ingresado no se encuentra registrado. Digita nuevamente tu número de cédula sin puntos o caracteres especiales.")
                 st.markdown("""
                 Te invitamos a comunicarte con nuestros asesores para validar tu información:  
                 📞 <b>601 7491928</b>  
@@ -168,44 +207,3 @@ if st.session_state.get("start_chat"):
                 💬 <a href="https://wa.me/573112878102?text=Hola%2C+quisiera+validar+mi+información+en+el+Chatbot+IA+de+Serfinanza" target="_blank">Escríbenos por WhatsApp</a>
                 """, unsafe_allow_html=True)
                 st.stop()
-    # ============================
-    # 💳 MOSTRAR OBLIGACIONES DEL CLIENTE
-    # ============================
-
-    # Agrupar obligaciones por cliente
-    obligaciones_cliente = cliente.copy()
-
-    # Contar cantidad de obligaciones
-    total_obligaciones = len(obligaciones_cliente)
-
-    # Obtener el nombre del cliente (de la columna NOMBRE_FINAL)
-    nombre_cliente = obligaciones_cliente["NOMBRE_FINAL"].iloc[0].title()
-
-    # Encabezado dinámico
-    st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones > 1 else ''}** registradas.")
-    st.markdown("A continuación te presento el estado de cada una 👇")
-
-    # Mostrar obligaciones en formato legible
-    for idx, row in obligaciones_cliente.iterrows():
-        st.markdown(f"""
-        <div style='border:1px solid #DDD; border-radius:10px; padding:12px; margin-top:10px; background-color:#F9F9FB;'>
-        <b>💳 Obligación {idx + 1}</b><br>
-        <b>🔹 Producto:</b> {row['TIPO_PRODUCTO']}<br>
-        <b>🔹 Últimos dígitos:</b> {row['ULTIMOS_CUENTA']}<br>
-        <b>🔹 Pago mínimo del mes:</b> ${row['PAGO_MINIMO_MES']:,.0f}<br>
-        <b>🔹 Mora actual:</b> {row['MORA_ACTUAL']} días
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Selector de obligación
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
-    opciones = [
-        f"Obligación {i+1} — {row['TIPO_PRODUCTO']} ({row['ULTIMOS_CUENTA']})"
-        for i, row in enumerate(obligaciones_cliente.itertuples())
-    ]
-    seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
-
-    if seleccion:
-        st.session_state["obligacion_seleccionada"] = seleccion
-        st.info(f"✅ Has seleccionado {seleccion}. A continuación se mostrarán las opciones de negociación disponibles.")
