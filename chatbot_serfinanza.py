@@ -17,7 +17,7 @@ REPO_NAME = "andrescruz7777-arch/CHATBOT-SERFINANZA"
 EXCEL_FILE = "logs_negociacion.xlsx"
 
 # Inicializa conexión GitHub
-g = Github(GITHUB_TOKEN)
+g = Github(GH_TOKEN)
 repo = g.get_repo(REPO_NAME)
 
 # ============================
