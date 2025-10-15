@@ -1,15 +1,16 @@
 import streamlit as st
 import pandas as pd
 import requests
-from datetime import datetime
 from openai import OpenAI
+from datetime import datetime
+import base64
+import json
 
 # ============================
 # ⚙️ CONFIGURACIÓN INICIAL
 # ============================
 st.set_page_config(page_title="💬 Chatbot IA - Banco Serfinanza", layout="centered")
 
-# Estado persistente
 if "start_chat" not in st.session_state:
     st.session_state["start_chat"] = False
 if "cedula_validada" not in st.session_state:
@@ -32,12 +33,9 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
 }
 h1, h2, h3 { color: #1B168C !important; text-align: center; }
-.intro-text {
-    text-align: center; font-size: 1.15em; font-weight: 500; line-height: 1.6em;
-    margin-top: 15px; color: #1B168C !important;
-}
+.intro-text { text-align: center; font-size: 1.15em; font-weight: 500; line-height: 1.6em;
+    margin-top: 15px; color: #1B168C !important; }
 .highlight { color: #F43B63; font-weight: 600; }
-
 div.stButton > button, form button[kind="primary"] {
     background-color:#1B168C !important; color:#FFFFFF !important; border:none;
     border-radius:12px !important; padding:16px 60px !important;
@@ -47,21 +45,6 @@ div.stButton > button, form button[kind="primary"] {
 div.stButton > button:hover, form button[kind="primary"]:hover {
     background-color:#F43B63 !important; transform:scale(1.05);
 }
-label, .stTextInput label { color: #1B168C !important; font-weight: 700 !important; }
-.stTextInput > div > div {
-    background-color: #1B168C !important; border: 2px solid #F43B63 !important;
-    border-radius: 10px !important;
-}
-.stTextInput > div > div > input {
-    background-color: transparent !important; color: #FFFFFF !important;
-    font-weight: 600 !important; border: none !important;
-}
-.stTextInput input::placeholder { color: #E5E7EB !important; opacity: 1 !important; }
-table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; }
-th { background:#1B168C; color:#FFFFFF; text-align:center; padding:10px; }
-td { text-align:center; padding:8px; border-bottom:1px solid #E5E7EB; color:#000000; }
-tr:nth-child(even){ background:#F9FAFB; } tr:hover{ background:#F43B63; color:#FFFFFF; }
-.stAlert p, .stAlert span, .stAlert div { color: #000000 !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -172,12 +155,12 @@ if st.session_state.get("cedula_validada", False):
     nombre = str(obligacion_sel["NOMBRE_FINAL"]).title()
     producto = obligacion_sel["TIPO_PRODUCTO"]
     cuenta = obligacion_sel["ULTIMOS_CUENTA"]
-    saldo = f"${obligacion_sel.get('ULTIMO_SALDO_CAPITAL', 0):,.0f}"
     tasa = obligacion_sel.get("TASA", "según condiciones vigentes")
-    abono = f"${obligacion_sel.get('VALOR_ABONO', 0):,.0f}"
-    pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
     color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
+    # ============================
+    # 💡 ALTERNATIVA DISPONIBLE
+    # ============================
     st.markdown(f"""
     <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
     box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
@@ -188,104 +171,67 @@ if st.session_state.get("cedula_validada", False):
     </div>
     """, unsafe_allow_html=True)
 
+    # ============================
+    # 📆 SELECCIÓN DE CUOTAS
+    # ============================
     cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
     seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
+    # ============================
+    # ✅ NEGOCIACIÓN
+    # ============================
     if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
         confirm = f"Tu solicitud de negociación a {seleccion_cuota} fue registrada exitosamente. Consulta términos en la web de Banco Serfinanza."
-        st.markdown(f"""
-        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
-        box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
-            <div style='font-size:1.1em; color:{color}; font-weight:700;'>✅ Confirmación registrada</div>
-            <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{confirm}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.success(confirm)
 
-        # ============================
-        # 🧾 REGISTRO DE NEGOCIACIÓN CON IP
-        # ============================
+        # 🔍 Obtener IP del cliente
         try:
-            ip_data = requests.get("https://ipapi.co/json", timeout=5).json()
-            ip = ip_data.get("ip", "Desconocida")
-            ciudad = ip_data.get("city", "No disponible")
-            region = ip_data.get("region", "No disponible")
-            pais = ip_data.get("country_name", "No disponible")
+            ip = requests.get("https://api.ipify.org?format=json").json()["ip"]
         except:
-            ip, ciudad, region, pais = "Error IP", "-", "-", "-"
+            ip = "No disponible"
 
+        # 🧾 Crear registro local
         registro = pd.DataFrame([{
-            "FechaHora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "Fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Cedula": cedula,
             "Nombre": nombre,
             "Producto": producto,
-            "UltimosDigitos": cuenta,
+            "Cuenta": cuenta,
             "Estrategia": estrategia,
             "Cuotas": seleccion_cuota,
-            "IP": ip,
-            "Ciudad": ciudad,
-            "Region": region,
-            "Pais": pais
+            "IP_Usuario": ip
         }])
 
         try:
-            existing = pd.read_excel("logs_negociacion.xlsx")
-            logs = pd.concat([existing, registro], ignore_index=True)
-        except FileNotFoundError:
-            logs = registro
+            df_existente = pd.read_excel("logs_negociacion.xlsx")
+            df_final = pd.concat([df_existente, registro], ignore_index=True)
+        except:
+            df_final = registro
 
-        logs.to_excel("logs_negociacion.xlsx", index=False)
+        df_final.to_excel("logs_negociacion.xlsx", index=False)
 
-        # ============================
-        # 🧭 MÁS OBLIGACIONES EN MORA
-        # ============================
-        cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
-        if len(cliente_en_mora) >= 2:
-            st.markdown(f"""
-            <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
-            box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:15px;'>
-                <div style='font-size:1.1em; color:#1B168C; font-weight:700;'>📌 Tienes más obligaciones en mora</div>
-                <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>
-                    Excelente, hemos registrado tu negociación.<br>
-                    Ahora continuemos con tu otra obligación que presenta mora, para ayudarte a normalizar completamente tu estado con el <b>Banco Serfinanza</b>.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+        # 🚀 Subir a GitHub automáticamente
+        import base64
+        import requests
 
-    elif seleccion_cuota == "No estoy interesado":
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
-        box-shadow:0 4px 12px rgba(27,22,140,0.15);'>
-            <div style='font-size:1.2em; font-weight:700; color:#1B168C;'>🤖 Asesor Virtual IA – Banco Serfinanza</div>
-            <div style='margin-top:8px; font-size:1em; color:#333;'>
-                💬 Entiendo que no deseas tomar el acuerdo por ahora.<br>
-                Permíteme asesorarte para tomar la mejor decisión sobre los <b>beneficios del acuerdo o sus condiciones</b>.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        with open("logs_negociacion.xlsx", "rb") as f:
+            contenido = base64.b64encode(f.read()).decode()
 
-        if "chat_history" not in st.session_state:
-            st.session_state["chat_history"] = []
+        url = "https://api.github.com/repos/andrescruz7777-arch/CHATBOT-SERFINANZA/contents/logs_negociacion.xlsx"
+        headers = {
+            "Authorization": f"Bearer {st.secrets['GH_TOKEN']}",
+            "Content-Type": "application/json"
+        }
 
-        for msg in st.session_state["chat_history"]:
-            if msg["role"] == "user":
-                st.markdown(f"<div style='text-align:right; margin-top:10px;'><div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div style='text-align:left; margin-top:10px;'><div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
+        data = {
+            "message": f"📝 Actualización de logs de negociación - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            "content": contenido,
+            "branch": "main"
+        }
 
-        user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
+        r = requests.put(url, headers=headers, data=json.dumps(data))
+        if r.status_code in [200, 201]:
+            st.success("✅ Registro actualizado en GitHub correctamente.")
+        else:
+            st.warning(f"⚠️ No se pudo subir a GitHub ({r.status_code}).")
 
-        if user_msg:
-            st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-            with st.spinner("🤖 Cargando tu respuesta..."):
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
-                        *st.session_state["chat_history"]
-                    ]
-                )
-            ai_reply = response.choices[0].message.content
-            st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
-            st.rerun()
