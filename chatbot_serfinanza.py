@@ -12,7 +12,7 @@ from github import Github
 st.set_page_config(page_title="💬 Chatbot IA - Banco Serfinanza", layout="centered")
 
 # --- Repositorio y token (ajusta tu token personal aquí) ---
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+GH_TOKEN = st.secrets["GH_TOKEN"]
 REPO_NAME = "andrescruz7777-arch/CHATBOT-SERFINANZA"
 EXCEL_FILE = "logs_negociacion.xlsx"
 
