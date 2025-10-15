@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import requests
+from datetime import datetime
 from openai import OpenAI
 
 # ============================
@@ -176,9 +178,6 @@ if st.session_state.get("cedula_validada", False):
     pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
     color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
 
-    # ============================
-    # 💡 MENSAJE DE ALTERNATIVA DISPONIBLE
-    # ============================
     st.markdown(f"""
     <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid {color};
     box-shadow:0 4px 12px rgba(27,22,140,0.15); margin-top:10px;'>
@@ -189,15 +188,9 @@ if st.session_state.get("cedula_validada", False):
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================
-    # 📆 SELECCIÓN DE CUOTAS
-    # ============================
     cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
     seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
 
-    # ============================
-    # ✅ NEGOCIACIÓN O CHAT
-    # ============================
     if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
         confirm = f"Tu solicitud de negociación a {seleccion_cuota} fue registrada exitosamente. Consulta términos en la web de Banco Serfinanza."
         st.markdown(f"""
@@ -208,7 +201,43 @@ if st.session_state.get("cedula_validada", False):
         </div>
         """, unsafe_allow_html=True)
 
-        # 🧭 Otras obligaciones
+        # ============================
+        # 🧾 REGISTRO DE NEGOCIACIÓN CON IP
+        # ============================
+        try:
+            ip_data = requests.get("https://ipapi.co/json", timeout=5).json()
+            ip = ip_data.get("ip", "Desconocida")
+            ciudad = ip_data.get("city", "No disponible")
+            region = ip_data.get("region", "No disponible")
+            pais = ip_data.get("country_name", "No disponible")
+        except:
+            ip, ciudad, region, pais = "Error IP", "-", "-", "-"
+
+        registro = pd.DataFrame([{
+            "FechaHora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "Cedula": cedula,
+            "Nombre": nombre,
+            "Producto": producto,
+            "UltimosDigitos": cuenta,
+            "Estrategia": estrategia,
+            "Cuotas": seleccion_cuota,
+            "IP": ip,
+            "Ciudad": ciudad,
+            "Region": region,
+            "Pais": pais
+        }])
+
+        try:
+            existing = pd.read_excel("logs_negociacion.xlsx")
+            logs = pd.concat([existing, registro], ignore_index=True)
+        except FileNotFoundError:
+            logs = registro
+
+        logs.to_excel("logs_negociacion.xlsx", index=False)
+
+        # ============================
+        # 🧭 MÁS OBLIGACIONES EN MORA
+        # ============================
         cliente_en_mora = cliente[cliente["MORA_ACTUAL"] >= 30]
         if len(cliente_en_mora) >= 2:
             st.markdown(f"""
@@ -223,9 +252,6 @@ if st.session_state.get("cedula_validada", False):
             """, unsafe_allow_html=True)
 
     elif seleccion_cuota == "No estoy interesado":
-        # ============================
-        # 💬 CHAT IA DE PERSUASIÓN
-        # ============================
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
@@ -252,13 +278,14 @@ if st.session_state.get("cedula_validada", False):
 
         if user_msg:
             st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
-                    *st.session_state["chat_history"]
-                ]
-            )
+            with st.spinner("🤖 Cargando tu respuesta..."):
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
+                        *st.session_state["chat_history"]
+                    ]
+                )
             ai_reply = response.choices[0].message.content
             st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
             st.rerun()
