@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from openai import OpenAI
-import requests, io, base64, json, datetime
+import requests, io, base64, json, datetime, pytz
 
 # ============================
 # ⚙️ CONFIGURACIÓN INICIAL
@@ -19,12 +19,16 @@ if "cuota_elegida" not in st.session_state:
     st.session_state["cuota_elegida"] = None
 
 # ============================
-# 🔧 FUNCIONES DE REGISTRO (añadidas)
+# 🔧 CONFIGURACIÓN GITHUB
 # ============================
 GH_TOKEN = st.secrets.get("GH_TOKEN", "")
 REPO = "andrescruz7777-arch/CHATBOT-SERFINANZA"
 FILE_PATH = "logs_negociacion.xlsx"
+tz_bogota = pytz.timezone("America/Bogota")
 
+# ============================
+# 🔧 FUNCIONES AUXILIARES
+# ============================
 def get_ip_geo():
     try:
         ip = requests.get("https://api.ipify.org?format=json", timeout=8).json().get("ip", "Desconocida")
@@ -58,16 +62,44 @@ def push_file_to_github(repo, path, token, content_bytes, sha=None):
     if r.status_code not in (200, 201):
         raise Exception(f"Error GitHub: {r.status_code} -> {r.text}")
 
-def save_log(entry: dict):
+def mask_last4(value):
+    s = str(value).strip()
+    digits = "".join([c for c in s if c.isdigit()])
+    return f"****{digits[-4:]}" if len(digits) >= 4 else s
+
+def save_log(entry_base: dict):
+    """Guarda un registro en logs_negociacion.xlsx (Bogotá, últimos 4, orden exacto)"""
     if not GH_TOKEN:
         return
     try:
+        now_bogota = datetime.datetime.now(tz_bogota)
+        entry_base["FechaHora"] = now_bogota.strftime("%Y-%m-%d %H:%M:%S")
+        entry_base["Fecha"] = now_bogota.strftime("%Y-%m-%d %H:%M:%S")
+
+        if "Cuenta" in entry_base and entry_base["Cuenta"]:
+            entry_base["UltimosDigitos"] = mask_last4(entry_base["Cuenta"])
+        elif "UltimosDigitos" not in entry_base:
+            entry_base["UltimosDigitos"] = ""
+
+        cols = [
+            "FechaHora","Cedula","Nombre","Producto","UltimosDigitos","Estrategia",
+            "Cuotas","IP","Ciudad","Region","Pais","Fecha","Cuenta","IP_Usuario",
+            "MensajeUsuario","RespuestaIA"
+        ]
+
         content, sha = get_file_from_github(REPO, FILE_PATH, GH_TOKEN)
         if content:
             df = pd.read_excel(io.BytesIO(content))
         else:
-            df = pd.DataFrame()
-        df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
+            df = pd.DataFrame(columns=cols)
+
+        for c in cols:
+            if c not in df.columns:
+                df[c] = ""
+
+        row = {c: entry_base.get(c, "") for c in cols}
+        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)[cols]
+
         buffer = io.BytesIO()
         df.to_excel(buffer, index=False, engine="openpyxl")
         buffer.seek(0)
@@ -238,10 +270,10 @@ if st.session_state.get("cedula_validada", False):
         st.success(confirm)
         ip, ciudad, region, pais = get_ip_geo()
         save_log({
-            "FechaHora": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Cedula": cedula, "Nombre": nombre, "Producto": producto,
             "Estrategia": estrategia, "Cuotas": seleccion_cuota,
-            "IP": ip, "Ciudad": ciudad, "Region": region, "Pais": pais,
+            "Cuenta": cuenta, "IP": ip, "Ciudad": ciudad,
+            "Region": region, "Pais": pais, "IP_Usuario": ip,
             "MensajeUsuario": "", "RespuestaIA": ""
         })
 
@@ -266,10 +298,10 @@ if st.session_state.get("cedula_validada", False):
             st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
             ip, ciudad, region, pais = get_ip_geo()
             save_log({
-                "FechaHora": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "Cedula": cedula, "Nombre": nombre, "Producto": producto,
                 "Estrategia": estrategia, "Cuotas": "Chat IA",
-                "IP": ip, "Ciudad": ciudad, "Region": region, "Pais": pais,
+                "Cuenta": cuenta, "IP": ip, "Ciudad": ciudad,
+                "Region": region, "Pais": pais, "IP_Usuario": ip,
                 "MensajeUsuario": user_msg, "RespuestaIA": ai_reply
             })
             st.rerun()
