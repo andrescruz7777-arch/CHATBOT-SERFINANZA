@@ -108,7 +108,7 @@ def save_log(entry_base: dict):
         st.warning(f"No se pudo registrar: {e}")
 
 # ============================
-# 🎨 ESTILOS CORPORATIVOS (IGUAL QUE TU VERSIÓN)
+# 🎨 ESTILOS CORPORATIVOS (tus colores intactos)
 # ============================
 st.markdown("""
 <style>
@@ -183,7 +183,7 @@ with col2:
         st.session_state["start_chat"] = True
 
 # ============================
-# FUNCIÓN NORMALIZAR ESTRATEGIAS (igual a tu lógica)
+# FUNCIÓN NORMALIZAR ESTRATEGIAS
 # ============================
 def estrategia_base_label(valor: str) -> str:
     if not isinstance(valor, str): return ""
@@ -195,47 +195,46 @@ def estrategia_base_label(valor: str) -> str:
     return valor
 
 # ============================
-# 💡 OFRECIMIENTO POR ESTRATEGIA (exactamente tus textos)
+# 💡 OFRECIMIENTO (COMPATIBLE con textos parciales)
 # ============================
-def mensaje_ofrecimiento_por_estrategia(estrategia_texto: str, nombre: str, producto: str, cuenta: str,
-                                        saldo: str, tasa: str, abono: str, pago_min: str, color: str) -> str:
+def mensaje_ofrecimiento_por_estrategia(estrategia_texto, nombre, producto, cuenta, saldo, tasa, abono, pago_min, color):
     et = (estrategia_texto or "").upper().strip()
-
     mensajes = {
         "REDIFERIDO CON PAGO": f"{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, "
                                f"no incluye intereses y otros conceptos de tu <b>{producto}</b> terminada en <b>{cuenta}</b> "
                                f"por valor de <b>{saldo}</b> con una tasa del <b>{tasa}</b>. "
                                f"Realiza un abono de <b>{abono}</b> para aplicar la alternativa, respondiendo con la letra respectiva "
                                "acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-
         "REDIFERIDO SIN PAGO": f"{nombre}, Banco Serfinanza te invita a ampliar el plazo del saldo total del capital, "
                                f"no incluye intereses y otros conceptos de tu <b>{producto}</b> terminada en <b>{cuenta}</b> "
                                f"por valor de <b>{saldo}</b> con una tasa del <b>{tasa}</b>. "
                                "Responde con la letra respectiva acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-
         "REESTRUCTURACION CON PAGO": f"{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, "
                                      f"no incluye intereses y otros conceptos de tu <b>{producto}</b> terminada en <b>{cuenta}</b> "
                                      f"por valor de <b>{saldo}</b> con una tasa del <b>{tasa}</b>. "
                                      f"Realiza un abono de <b>{abono}</b> para aplicar la alternativa, respondiendo con la letra respectiva "
                                      "acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-
         "REESTRUCTURACION SIN PAGO": f"{nombre}, Banco Serfinanza te invita a reestructurar el plazo del saldo total del capital, "
                                      f"no incluye intereses y otros conceptos de tu <b>{producto}</b> terminada en <b>{cuenta}</b> "
                                      f"por valor de <b>{saldo}</b> con una tasa del <b>{tasa}</b>. "
                                      "Responde con la letra respectiva acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas, D: 48 cuotas, E: 60 cuotas, F: No estoy interesado.",
-
         "PRORROGA SIN PAGO": f"{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de <b>{pago_min}</b> "
                               f"de tu <b>{producto}</b> terminada en <b>{cuenta}</b> con una tasa del <b>{tasa}</b>, "
                               "los intereses y otros conceptos serán diferidos a 12 meses al 0%. "
                               "Responde con la letra respectiva acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas.",
-
         "PRORROGA CON PAGO": f"{nombre}, Banco Serfinanza te invita a diferir el capital de tu pago mínimo por valor de <b>{pago_min}</b> "
                               f"de tu <b>{producto}</b> terminada en <b>{cuenta}</b> con una tasa del <b>{tasa}</b>, "
                               "los intereses y otros conceptos serán diferidos a 12 meses al 0%. "
                               f"Realiza un abono de <b>{abono}</b> y responde con la letra respectiva acorde con el número de cuotas que deseas: A: 12 cuotas, B: 24 cuotas, C: 36 cuotas."
     }
 
-    clave = next((k for k in mensajes.keys() if k in et), None)
+    # Coincidencia flexible
+    clave = None
+    for k in mensajes.keys():
+        if k in et or k.split()[0] in et:
+            clave = k
+            break
+
     cuerpo = mensajes.get(clave, f"{nombre}, Banco Serfinanza te ofrece una alternativa sobre tu <b>{producto}</b> terminada en <b>{cuenta}</b>.")
 
     return f"""
@@ -247,39 +246,37 @@ def mensaje_ofrecimiento_por_estrategia(estrategia_texto: str, nombre: str, prod
     """
 
 # ============================
-# ✅ CONFIRMACIONES POR ESTRATEGIA (exactamente tus textos)
+# ✅ CONFIRMACIONES (COMPATIBLE también con textos parciales)
 # ============================
-def mensaje_confirmacion_por_estrategia(estrategia_texto: str, cuotas_txt: str, producto: str, cuenta: str,
-                                        tasa: str, color: str) -> str:
+def mensaje_confirmacion_por_estrategia(estrategia_texto, cuotas_txt, producto, cuenta, tasa, color):
     et = (estrategia_texto or "").upper().strip()
     cuotas_num = (cuotas_txt or "").replace(" cuotas", "").strip()
 
-    # Mapear confirmaciones EXACTAS (corrigiendo placeholders a variables reales)
-    if "REDIFERIDO CON PAGO" in et:
+    if "REDIFERIDO" in et and "CON" in et:
         cuerpo = (f"Tu solicitud de la ampliación de plazo al saldo capital a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
                   f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será del <b>{tasa}</b> "
                   "y cuando se realice el abono acordado. Consulta términos y condiciones en la página web del Banco Serfinanza.")
-    elif "REDIFERIDO SIN PAGO" in et:
+    elif "REDIFERIDO" in et:
         cuerpo = (f"Tu solicitud de la ampliación de plazo al saldo capital a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
                   f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será del <b>{tasa}</b>. "
                   "Consulta términos y condiciones en la página web del Banco Serfinanza.")
-    elif "REESTRUCTURACION CON PAGO" in et:
+    elif "REESTRUCTURACION" in et and "CON" in et:
         cuerpo = (f"Tu solicitud de reestructuración de plazo al saldo capital a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
                   f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio "
                   "y cuando se realice el abono acordado. La obligación quedará marcada como reestructurada ante las centrales de riesgo, "
                   "consulta términos y condiciones en la página web del Banco Serfinanza.")
-    elif "REESTRUCTURACION SIN PAGO" in et:
+    elif "REESTRUCTURACION" in et:
         cuerpo = (f"Tu solicitud de reestructuración de plazo al saldo capital a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
                   f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será la vigente del producto al momento de aplicar el beneficio. "
                   "La obligación quedará marcada como reestructurada ante las centrales de riesgo, consulta términos y condiciones en la página web del Banco Serfinanza.")
-    elif "PRORROGA SIN PAGO" in et:
-        cuerpo = (f"Tu solicitud de diferido del capital de tu pago mínimo a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
-                  f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será del <b>{tasa}</b>, "
-                  "consulta términos y condiciones en la página web del Banco Serfinanza.")
-    elif "PRORROGA CON PAGO" in et:
+    elif "PRORROGA" in et and "CON" in et:
         cuerpo = (f"Tu solicitud de diferido del capital de tu pago mínimo a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
                   f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente siempre y cuando se realice el abono acordado, "
                   f"la tasa será del <b>{tasa}</b>, consulta términos y condiciones en la página web del Banco Serfinanza.")
+    elif "PRORROGA" in et:
+        cuerpo = (f"Tu solicitud de diferido del capital de tu pago mínimo a <b>{cuotas_num} cuotas</b> en tu <b>{producto}</b> "
+                  f"terminada en <b>{cuenta}</b> ha sido registrada exitosamente, la tasa será del <b>{tasa}</b>, "
+                  "consulta términos y condiciones en la página web del Banco Serfinanza.")
     else:
         cuerpo = "Tu solicitud fue registrada exitosamente. Consulta términos y condiciones en la página web del Banco Serfinanza."
 
@@ -290,172 +287,3 @@ def mensaje_confirmacion_por_estrategia(estrategia_texto: str, cuotas_txt: str, 
         <div style='margin-top:10px; font-size:1em; line-height:1.6em; color:#333;'>{cuerpo}</div>
     </div>
     """
-
-# ============================
-# 🔍 VALIDACIÓN DE CÉDULA (IGUAL QUE TU FLUJO)
-# ============================
-if st.session_state["start_chat"]:
-    st.markdown("<hr><br>", unsafe_allow_html=True)
-    st.subheader("🔍 Verificación de identidad")
-
-    c1, c2, c3 = st.columns([1, 1.6, 1])
-    with c2:
-        with st.form("form_cedula", clear_on_submit=False):
-            cedula = st.text_input("🪪 Digita tu número de cédula (sin puntos ni caracteres especiales):", key="cedula_input")
-            submitted = st.form_submit_button("➡️ Continuar")
-            if submitted and not cedula.strip():
-                st.warning("⚠️ Por favor ingresa tu número de cédula antes de continuar.")
-                st.stop()
-
-    if submitted and cedula:
-        try:
-            data = pd.read_excel("base_bot_serfinanza.xls")
-        except Exception as e:
-            st.error(f"Error al cargar la base: {e}")
-            st.stop()
-
-        cliente = data[data["NUMERO_IDENTIFICACION"].astype(str) == cedula.strip()]
-        if cliente.empty:
-            st.warning("⚠️ No encontramos información para ese documento.")
-            st.stop()
-        else:
-            st.session_state["cedula_validada"] = True
-            st.session_state["cliente_data"] = cliente
-
-# ============================
-# 🧭 DETALLE DE OBLIGACIONES (IGUAL), OFRECIMIENTO Y CONFIRMACIÓN
-# ============================
-if st.session_state.get("cedula_validada", False):
-    cliente = st.session_state["cliente_data"]
-    obligaciones_cliente = cliente.copy()
-    total_obligaciones = len(obligaciones_cliente)
-    nombre_cliente = str(obligaciones_cliente["NOMBRE_FINAL"].iloc[0]).title()
-
-    st.markdown(f"### 👋 Hola {nombre_cliente}, actualmente cuentas con **{total_obligaciones} obligación{'es' if total_obligaciones>1 else ''}** registradas.")
-    st.markdown("A continuación te presento el estado de cada una 👇")
-
-    cols_vis = ["ULTIMOS_CUENTA","TIPO_PRODUCTO","PAGO_MINIMO_MES","MORA_ACTUAL","ESTRATEGIA_ACTUAL"]
-    obligaciones_vista = obligaciones_cliente[cols_vis].rename(columns={
-        "ULTIMOS_CUENTA":"Últimos dígitos",
-        "TIPO_PRODUCTO":"Producto",
-        "PAGO_MINIMO_MES":"Pago mínimo mes ($)",
-        "MORA_ACTUAL":"Mora (días)",
-        "ESTRATEGIA_ACTUAL":"Alternativa"
-    })
-    obligaciones_vista["Alternativa"] = obligaciones_vista["Alternativa"].apply(estrategia_base_label)
-    obligaciones_vista["Pago mínimo mes ($)"] = pd.to_numeric(obligaciones_vista["Pago mínimo mes ($)"], errors="coerce").fillna(0).map("${:,.0f}".format)
-    st.markdown(obligaciones_vista.to_html(index=False, escape=False), unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### 🤝 ¿Qué obligación deseas negociar?")
-
-    opciones = [f"{row['Producto']} ({row['Últimos dígitos']})" for _, row in obligaciones_vista.iterrows()]
-    seleccion = st.selectbox("Selecciona una opción:", opciones, key="obligacion_seleccionada")
-
-    obligacion_sel = obligaciones_cliente.iloc[opciones.index(seleccion)]
-    estrategia = str(obligacion_sel["ESTRATEGIA_ACTUAL"]).strip().upper()
-    nombre = str(obligacion_sel["NOMBRE_FINAL"]).title()
-    producto = str(obligacion_sel["TIPO_PRODUCTO"])
-    cuenta = str(obligacion_sel["ULTIMOS_CUENTA"])
-
-    # Variables dinámicas adicionales
-    saldo = f"${obligacion_sel.get('ULTIMO_SALDO_CAPITAL', 0):,.0f}"
-    tasa = str(obligacion_sel.get("TASA", "según condiciones vigentes"))
-    abono = f"${obligacion_sel.get('VALOR_ABONO', 0):,.0f}"
-    pago_minimo = f"${obligacion_sel.get('PAGO_MINIMO_MES', 0):,.0f}"
-
-    color = "#1B168C" if "SIN PAGO" in estrategia else "#F43B63"
-
-    # 💡 OFRECIMIENTO (según estrategia, EXACTAMENTE tus textos)
-    st.markdown(
-        mensaje_ofrecimiento_por_estrategia(
-            estrategia_texto=estrategia,
-            nombre=nombre,
-            producto=producto,
-            cuenta=cuenta,
-            saldo=saldo,
-            tasa=tasa,
-            abono=abono,
-            pago_min=pago_minimo,
-            color=color
-        ),
-        unsafe_allow_html=True
-    )
-
-    # 📆 SELECCIÓN DE CUOTAS
-    cuotas = ["Selecciona una opción...", "12 cuotas", "24 cuotas", "36 cuotas", "48 cuotas", "60 cuotas", "No estoy interesado"]
-    seleccion_cuota = st.selectbox("📆 Selecciona una opción:", cuotas, index=0, key="cuota_tmp")
-
-    # ✅ CONFIRMACIÓN POR ESTRATEGIA (exactamente tus textos)
-    if seleccion_cuota not in ["Selecciona una opción...", "No estoy interesado"]:
-        st.markdown(
-            mensaje_confirmacion_por_estrategia(
-                estrategia_texto=estrategia,
-                cuotas_txt=seleccion_cuota,
-                producto=producto,
-                cuenta=cuenta,
-                tasa=tasa,
-                color=color
-            ),
-            unsafe_allow_html=True
-        )
-
-        # Guardar en logs
-        ip, ciudad, region, pais = get_ip_geo()
-        save_log({
-            "Cedula": st.session_state.get("cedula_input", ""),
-            "Nombre": nombre, "Producto": producto,
-            "Estrategia": estrategia, "Cuotas": seleccion_cuota,
-            "Cuenta": cuenta, "IP": ip, "Ciudad": ciudad,
-            "Region": region, "Pais": pais, "IP_Usuario": ip,
-            "MensajeUsuario": "", "RespuestaIA": ""
-        })
-
-    elif seleccion_cuota == "No estoy interesado":
-        # 🤖 CHAT IA DE PERSUASIÓN (igual a tu flujo)
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style='padding:20px; background:#FFFFFF; border-radius:15px; border:2px solid #1B168C;
-        box-shadow:0 4px 12px rgba(27,22,140,0.15);'>
-            <div style='font-size:1.2em; font-weight:700; color:#1B168C;'>🤖 Asesor Virtual IA – Banco Serfinanza</div>
-            <div style='margin-top:8px; font-size:1em; color:#333;'>
-                💬 Entiendo que no deseas tomar el acuerdo por ahora.<br>
-                Permíteme asesorarte para tomar la mejor decisión sobre los <b>beneficios del acuerdo, cómo mejora tu historial crediticio y fortalece tu comportamiento financiero</b>.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if "chat_history" not in st.session_state:
-            st.session_state["chat_history"] = []
-
-        for msg in st.session_state["chat_history"]:
-            if msg["role"] == "user":
-                st.markdown(f"<div style='text-align:right; margin-top:10px;'><div style='display:inline-block; background:#F43B63; color:white; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div style='text-align:left; margin-top:10px;'><div style='display:inline-block; background:#FFFFFF; color:#1B168C; border:1.8px solid #1B168C; padding:10px 14px; border-radius:15px; max-width:80%;'>{msg['content']}</div></div>", unsafe_allow_html=True)
-
-        user_msg = st.chat_input("✍️ Escribe tus dudas o inquietudes aquí...")
-        if user_msg:
-            st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "Eres un asesor virtual del Banco Serfinanza, empático y experto en acuerdos de pago. Explica los beneficios del acuerdo, cómo ayuda a mejorar el historial crediticio y mantener un buen comportamiento financiero."},
-                    *st.session_state["chat_history"]
-                ]
-            )
-            ai_reply = response.choices[0].message.content
-            st.session_state["chat_history"].append({"role": "assistant", "content": ai_reply})
-
-            # Registrar trazabilidad del chat
-            ip, ciudad, region, pais = get_ip_geo()
-            save_log({
-                "Cedula": st.session_state.get("cedula_input", ""),
-                "Nombre": nombre, "Producto": producto,
-                "Estrategia": estrategia, "Cuotas": "Chat IA",
-                "Cuenta": cuenta, "IP": ip, "Ciudad": ciudad,
-                "Region": region, "Pais": pais, "IP_Usuario": ip,
-                "MensajeUsuario": user_msg, "RespuestaIA": ai_reply
-            })
-            st.rerun()
